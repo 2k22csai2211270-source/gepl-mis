@@ -1,0 +1,146 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+/* THEME VARIABLES */
+body {
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* DARK */
+body.dark {
+  --bg-main: #020617;
+  --bg-sidebar: #020617;
+  --bg-card: #020617;
+  --text-main: #e5e7eb;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+}
+
+/* LIGHT */
+body.light {
+  --bg-main: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent: #2563eb;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: var(--bg-sidebar);
+  padding: 20px;
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* APPLY THEME */
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* LAYOUT */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: var(--bg-sidebar);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar .logo {
+  margin-bottom: 20px;
+  color: var(--accent);
+}
+
+.sidebar button {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 30px;
+  background: var(--bg-content);
+}
+/* SIDEBAR MENU */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.menu:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateX(2px);
+}
+
+.menu.active {
+  background: var(--accent);
+  color: white;
+}
+
+.menu .icon {
+  font-size: 18px;
+}
+/* CARD INTERACTIONS */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+}
+
+/* BUTTON FEEDBACK */
+button {
+  transition: transform 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
