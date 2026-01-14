@@ -5,11 +5,12 @@ import Alerts from "../components/Alerts";
 import { generateAlerts } from "../utils/alerts";
 import PageWrapper from "../layout/PageWrapper";
 
-export default function Dashboard({ inventory, sales, production, employees }) {
+
+export default function Dashboard({ inventory, sales, production, employees, cashData, receivables }) {
   const totalSales = sales.reduce((s, i) => s + Number(i.value), 0);
   const totalProduction = production.reduce((s, i) => s + Number(i.units), 0);
 
-  const alerts = generateAlerts(inventory, sales, production);
+  const alerts = generateAlerts(inventory, sales, production, cashData, receivables);
 
   const kpis = [
     { title: "Employees", value: 42 },

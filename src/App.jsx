@@ -6,6 +6,9 @@ import Inventory from "./modules/Inventory";
 import Sales from "./modules/Sales";
 import Production from "./modules/Production";
 import HR from "./modules/HR";
+import CashBank from "./modules/CashBank";
+import Receivables from "./modules/Receivables";
+
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -52,6 +55,24 @@ export default function App() {
     }
   });
 
+  const [cashData, setCashData] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("cashData")) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [receivables, setReceivables] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("receivables")) || [];
+    } catch {
+      return [];
+    }
+  });
+
+
+
   /* PERSIST */
   useEffect(() => {
     localStorage.setItem("inventory", JSON.stringify(inventory));
@@ -68,10 +89,24 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("employees", JSON.stringify(employees));
   }, [employees]);
+
   useEffect(() => {
     document.body.className = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("cashData", JSON.stringify(cashData));
+  }, [cashData]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "receivables",
+      JSON.stringify(receivables)
+    );
+  }, [receivables]);
+
+
 
 
 
@@ -83,15 +118,17 @@ export default function App() {
   return (
     <div className="layout">
       <Sidebar
-  role={user.role}
-  setPage={setPage}
-  activePage={page}
-  inventory={inventory}
-  sales={sales}
-  production={production}
-  theme={theme}
-  setTheme={setTheme}
-/>
+        role={user.role}
+        setPage={setPage}
+        activePage={page}
+        inventory={inventory}
+        sales={sales}
+        production={production}
+        cashData={cashData}
+        theme={theme}
+        setTheme={setTheme}
+      />
+
 
 
       <div className="content">
@@ -101,6 +138,7 @@ export default function App() {
             sales={sales}
             production={production}
             employees={employees}
+            cashData={cashData}
           />
 
         )}
@@ -119,6 +157,22 @@ export default function App() {
         {page === "hr" && user.role === "admin" && (
           <HR employees={employees} setEmployees={setEmployees} />
         )}
+
+        {page === "cash" && user.role === "admin" && (
+          <CashBank
+            cashData={cashData}
+            setCashData={setCashData}
+          />
+        )}
+
+        {page === "receivables" && user.role === "admin" && (
+          <Receivables
+            receivables={receivables}
+            setReceivables={setReceivables}
+          />
+        )}
+
+
 
 
         {page === "production" && (

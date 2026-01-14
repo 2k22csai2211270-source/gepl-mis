@@ -7,6 +7,8 @@ export default function Sidebar({
     inventory = [],
     sales = [],
     production = [],
+    cashData = [],
+    receivables,
     theme,
     setTheme
 }) {
@@ -16,7 +18,11 @@ export default function Sidebar({
             { label: "Inventory", page: "inventory", icon: "📦" },
             { label: "Sales", page: "sales", icon: "💰" },
             { label: "Production", page: "production", icon: "🏭" },
-            { label: "HR", page: "hr", icon: "👥" }
+            { label: "HR", page: "hr", icon: "👥" },
+            { label: "Cash & Bank", page: "cash", icon: "🏦" },
+            { label: "Receivables", page: "receivables", icon: "📑" }
+
+
 
         ],
         sales: [{ label: "Sales", page: "sales", icon: "💰" }],
@@ -26,7 +32,9 @@ export default function Sidebar({
     const alerts = generateAlerts(
         inventory || [],
         sales || [],
-        production || []
+        production || [],
+        cashData || [],
+        receivables || []
     );
 
     return (
