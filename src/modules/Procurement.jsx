@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { paginate, filterBySearch } from "../utils/listHelpers";
 
-export default function Production({ production = [], setProduction }) {
-  const [units, setUnits] = useState("");
+export default function Procurement({ procurement = [], setProcurement }) {
+  const [item, setItem] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [editItem, setEditItem] = useState(null);
@@ -10,46 +10,46 @@ export default function Production({ production = [], setProduction }) {
   const PAGE_SIZE = 5;
 
   function add() {
-    if (!units) return;
-    setProduction([...production, { id: Date.now(), units: Number(units) }]);
-    setUnits("");
+    if (!item) return;
+    setProcurement([...procurement, { id: Date.now(), item }]);
+    setItem("");
   }
 
   function remove(id) {
-    setProduction(production.filter(p => p.id !== id));
+    setProcurement(procurement.filter(p => p.id !== id));
   }
 
   function saveEdit() {
-    setProduction(production.map(p => p.id === editItem.id ? editItem : p));
+    setProcurement(procurement.map(p => p.id === editItem.id ? editItem : p));
     setEditItem(null);
   }
 
-  const filtered = filterBySearch(production, search, ["units"]);
+  const filtered = filterBySearch(procurement, search, ["item"]);
   const paged = paginate(filtered, page, PAGE_SIZE);
 
   return (
     <div>
       <div className="module-header">
-   
+       
         <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <div className="form-card">
-        <input placeholder="Units Produced" value={units} onChange={e => setUnits(e.target.value)} />
+        <input placeholder="Material Name" value={item} onChange={e => setItem(e.target.value)} />
         <button onClick={add}>Add</button>
       </div>
 
       <div className="data-list">
         <div className="data-list-header">
-          <span>Units</span>
+          <span>Item</span>
           <span>Status</span>
           <span>Action</span>
         </div>
 
         {paged.map(p => (
           <div key={p.id} className="data-row">
-            <span>{p.units}</span>
-            <span className="badge-pill badge-green">Completed</span>
+            <span>{p.item}</span>
+            <span className="badge-pill badge-blue">Ordered</span>
             <span>
               <button onClick={() => setEditItem(p)}>✏️</button>
               <button onClick={() => remove(p.id)}>🗑</button>
@@ -62,10 +62,10 @@ export default function Production({ production = [], setProduction }) {
 
       {editItem && (
         <EditModal onClose={() => setEditItem(null)}>
-          <h3>Edit Production</h3>
+          <h3>Edit Procurement</h3>
           <input
-            value={editItem.units}
-            onChange={e => setEditItem({ ...editItem, units: Number(e.target.value) })}
+            value={editItem.item}
+            onChange={e => setEditItem({ ...editItem, item: e.target.value })}
           />
           <button onClick={saveEdit}>Save</button>
         </EditModal>

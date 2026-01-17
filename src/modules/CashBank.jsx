@@ -1,265 +1,119 @@
-<<<<<<< HEAD
 import { useState } from "react";
-import PageWrapper from "../layout/PageWrapper";
-import {
-  calculateClosing,
-  calculateRunway
-} from "../utils/cashLogic";
+import { paginate, filterBySearch } from "../utils/listHelpers";
 
-export default function CashBank({ cashData, setCashData }) {
-  const [form, setForm] = useState({
-    date: "",
-    bank: "",
-    opening: "",
-    receipts: "",
-    payments: ""
-  });
+export default function CashBank({ cashData = [], setCashData }) {
+  const [type, setType] = useState("in");
+  const [amount, setAmount] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [editItem, setEditItem] = useState(null);
 
-  function addEntry(e) {
-    e.preventDefault();
+  const PAGE_SIZE = 5;
 
-    const closing = calculateClosing(
-      Number(form.opening),
-      Number(form.receipts),
-      Number(form.payments)
-    );
-
+  function add() {
+    if (!amount) return;
     setCashData([
       ...cashData,
-      {
-        ...form,
-        opening: Number(form.opening),
-        receipts: Number(form.receipts),
-        payments: Number(form.payments),
-        closing
-      }
+      { id: Date.now(), type, amount: Number(amount) }
     ]);
-
-    setForm({
-      date: "",
-      bank: "",
-      opening: "",
-      receipts: "",
-      payments: ""
-    });
+    setAmount("");
   }
 
-  const runway = calculateRunway(cashData);
+  function remove(id) {
+    setCashData(cashData.filter(c => c.id !== id));
+  }
 
-  return (
-    <PageWrapper>
-      <h2>Cash & Bank Management</h2>
-      <p style={{ color: "var(--text-muted)", marginBottom: 20 }}>
-        Daily cash position and survival forecast
-      </p>
-
-      {/* FORM */}
-      <form onSubmit={addEntry} style={{ marginBottom: 30 }}>
-        <input
-          type="date"
-          value={form.date}
-          onChange={e =>
-            setForm({ ...form, date: e.target.value })
-          }
-        />
-        <input
-          placeholder="Bank Name"
-          value={form.bank}
-          onChange={e =>
-            setForm({ ...form, bank: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Opening Balance"
-          value={form.opening}
-          onChange={e =>
-            setForm({ ...form, opening: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Receipts"
-          value={form.receipts}
-          onChange={e =>
-            setForm({ ...form, receipts: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Payments"
-          value={form.payments}
-          onChange={e =>
-            setForm({ ...form, payments: e.target.value })
-          }
-        />
-        <button>Add Entry</button>
-      </form>
-
-      {/* KPI */}
-      <div
-        className="card-hover"
-        style={{
-          padding: 20,
-          borderRadius: 12,
-          background: "var(--bg-card)",
-          marginBottom: 30
-        }}
-      >
-        <h3>Cash Runway</h3>
-        <h1>
-          {runway === Infinity ? "∞" : `${runway} days`}
-        </h1>
-      </div>
-
-      {/* TABLE */}
-      {cashData.map((c, i) => (
-        <div
-          key={i}
-          className="card-hover"
-          style={{
-            padding: 12,
-            marginBottom: 10,
-            background: "var(--bg-sidebar)",
-            borderRadius: 8
-          }}
-        >
-          <b>{c.date}</b> | {c.bank} | Closing: ₹{c.closing}
-        </div>
-      ))}
-    </PageWrapper>
-  );
-}
-=======
-import { useState } from "react";
-import PageWrapper from "../layout/PageWrapper";
-import {
-  calculateClosing,
-  calculateRunway
-} from "../utils/cashLogic";
-
-export default function CashBank({ cashData, setCashData }) {
-  const [form, setForm] = useState({
-    date: "",
-    bank: "",
-    opening: "",
-    receipts: "",
-    payments: ""
-  });
-
-  function addEntry(e) {
-    e.preventDefault();
-
-    const closing = calculateClosing(
-      Number(form.opening),
-      Number(form.receipts),
-      Number(form.payments)
+  function saveEdit() {
+    setCashData(
+      cashData.map(c =>
+        c.id === editItem.id ? editItem : c
+      )
     );
-
-    setCashData([
-      ...cashData,
-      {
-        ...form,
-        opening: Number(form.opening),
-        receipts: Number(form.receipts),
-        payments: Number(form.payments),
-        closing
-      }
-    ]);
-
-    setForm({
-      date: "",
-      bank: "",
-      opening: "",
-      receipts: "",
-      payments: ""
-    });
+    setEditItem(null);
   }
 
-  const runway = calculateRunway(cashData);
+  const filtered = filterBySearch(cashData, search, ["type"]);
+  const paged = paginate(filtered, page, PAGE_SIZE);
 
   return (
-    <PageWrapper>
-      <h2>Cash & Bank Management</h2>
-      <p style={{ color: "var(--text-muted)", marginBottom: 20 }}>
-        Daily cash position and survival forecast
-      </p>
-
-      {/* FORM */}
-      <form onSubmit={addEntry} style={{ marginBottom: 30 }}>
-        <input
-          type="date"
-          value={form.date}
-          onChange={e =>
-            setForm({ ...form, date: e.target.value })
-          }
-        />
-        <input
-          placeholder="Bank Name"
-          value={form.bank}
-          onChange={e =>
-            setForm({ ...form, bank: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Opening Balance"
-          value={form.opening}
-          onChange={e =>
-            setForm({ ...form, opening: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Receipts"
-          value={form.receipts}
-          onChange={e =>
-            setForm({ ...form, receipts: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Payments"
-          value={form.payments}
-          onChange={e =>
-            setForm({ ...form, payments: e.target.value })
-          }
-        />
-        <button>Add Entry</button>
-      </form>
-
-      {/* KPI */}
-      <div
-        className="card-hover"
-        style={{
-          padding: 20,
-          borderRadius: 12,
-          background: "var(--bg-card)",
-          marginBottom: 30
-        }}
-      >
-        <h3>Cash Runway</h3>
-        <h1>
-          {runway === Infinity ? "∞" : `${runway} days`}
-        </h1>
+    <div>
+      <div className="module-header">
+   
+        <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      {/* TABLE */}
-      {cashData.map((c, i) => (
-        <div
-          key={i}
-          className="card-hover"
-          style={{
-            padding: 12,
-            marginBottom: 10,
-            background: "var(--bg-sidebar)",
-            borderRadius: 8
-          }}
-        >
-          <b>{c.date}</b> | {c.bank} | Closing: ₹{c.closing}
+      <div className="form-card">
+        <select value={type} onChange={e => setType(e.target.value)}>
+          <option value="in">Cash In</option>
+          <option value="out">Cash Out</option>
+        </select>
+        <input placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
+        <button onClick={add}>Add</button>
+      </div>
+
+      <div className="data-list">
+        <div className="data-list-header">
+          <span>Type</span>
+          <span>Amount</span>
+          <span>Action</span>
         </div>
-      ))}
-    </PageWrapper>
+
+        {paged.map(c => (
+          <div key={c.id} className="data-row">
+            <span>{c.type === "in" ? "Credit" : "Debit"}</span>
+            <span>₹ {c.amount}</span>
+            <span>
+              <button onClick={() => setEditItem(c)}>✏️</button>
+              <button onClick={() => remove(c.id)}>🗑</button>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <Pagination page={page} total={filtered.length} size={PAGE_SIZE} setPage={setPage} />
+
+      {editItem && (
+        <EditModal onClose={() => setEditItem(null)}>
+          <h3>Edit Transaction</h3>
+          <select
+            value={editItem.type}
+            onChange={e => setEditItem({ ...editItem, type: e.target.value })}
+          >
+            <option value="in">Cash In</option>
+            <option value="out">Cash Out</option>
+          </select>
+          <input
+            value={editItem.amount}
+            onChange={e => setEditItem({ ...editItem, amount: Number(e.target.value) })}
+          />
+          <button onClick={saveEdit}>Save</button>
+        </EditModal>
+      )}
+    </div>
   );
 }
->>>>>>> d9e4f56a53ffdf3dd2fc5a497c9f37f89b087cef
+
+/* PAGINATION */
+function Pagination({ page, total, size, setPage }) {
+  const pages = Math.ceil(total / size);
+  if (pages <= 1) return null;
+  return (
+    <div style={{ marginTop: 16 }}>
+      {Array.from({ length: pages }).map((_, i) => (
+        <button key={i} onClick={() => setPage(i + 1)}>{i + 1}</button>
+      ))}
+    </div>
+  );
+}
+
+/* EDIT MODAL */
+function EditModal({ children, onClose }) {
+  return (
+    <div className="modal">
+      <div className="modal-card">
+        {children}
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}

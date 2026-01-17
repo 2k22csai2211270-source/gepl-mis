@@ -1,88 +1,42 @@
-import { generateAlerts } from "../utils/alerts";
-
 export default function Sidebar({
-    setPage,
-    role = "admin",
-    activePage,
-    inventory = [],
-    sales = [],
-    production = [],
-    cashData = [],
-    receivables,
-    theme,
-    setTheme
+  user,
+  page,
+  setPage,
+  collapsed,
+  setCollapsed
 }) {
-    const menuByRole = {
-        admin: [
-            { label: "Dashboard", page: "dashboard", icon: "📊" },
-            { label: "Inventory", page: "inventory", icon: "📦" },
-            { label: "Sales", page: "sales", icon: "💰" },
-            { label: "Production", page: "production", icon: "🏭" },
-            { label: "HR", page: "hr", icon: "👥" },
-            { label: "Cash & Bank", page: "cash", icon: "🏦" },
-            { label: "Receivables", page: "receivables", icon: "📑" }
+  const menus = {
+    admin: [
+      ["dashboard", "📊 Dashboard"],
+      ["cash", "💰 Cash"],
+      ["receivables", "📥 Receivables"],
+      ["payables", "📤 Payables"],
+      ["inventory", "📦 Inventory"],
+      ["production", "🏭 Production"],
+      ["projects", "📈 Projects"],
+      ["procurement", "🧾 Procurement"]
+    ]
+  };
 
+  return (
+    <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+      <div className="sidebar-header">
+        {!collapsed && <h2>GEPL MIS</h2>}
+        <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
+          ☰
+        </button>
+      </div>
 
-
-        ],
-        sales: [{ label: "Sales", page: "sales", icon: "💰" }],
-        production: [{ label: "Production", page: "production", icon: "🏭" }]
-    };
-
-    const alerts = generateAlerts(
-        inventory || [],
-        sales || [],
-        production || [],
-        cashData || [],
-        receivables || []
-    );
-
-    return (
-        <div className="sidebar">
-            <h3 className="logo">
-                GEPL MIS
-                {alerts.length > 0 && (
-                    <span
-                        style={{
-                            background: "#ef4444",
-                            color: "#fff",
-                            borderRadius: "50%",
-                            padding: "2px 8px",
-                            marginLeft: 8,
-                            fontSize: 12
-                        }}
-                    >
-                        {alerts.length}
-                    </span>
-                )}
-            </h3>
-
-            {(menuByRole[role] || []).map(item => (
-                <button
-                    key={item.page}
-                    onClick={() => setPage(item.page)}
-                    className={activePage === item.page ? "menu active" : "menu"}
-                >
-                    <span className="icon">{item.icon}</span>
-                    {item.label}
-                </button>
-            ))}
-            <button
-                onClick={() =>
-                    setTheme(theme === "dark" ? "light" : "dark")
-                }
-                style={{
-                    marginBottom: 20,
-                    padding: 8,
-                    borderRadius: 6,
-                    background: "var(--accent)",
-                    color: "white",
-                    border: "none"
-                }}
-            >
-                {theme === "dark" ? "☀ Light Mode" : "🌙 Dark Mode"}
-            </button>
-
+      {menus[user.role].map(([key, label]) => (
+        <div
+          key={key}
+          className={`menu-item ${page === key ? "active" : ""}`}
+          onClick={() => setPage(key)}
+          title={collapsed ? label : ""}
+        >
+          {collapsed ? label.split(" ")[0] : label}
         </div>
-    );
+      ))}
+    </aside>
+  );
 }

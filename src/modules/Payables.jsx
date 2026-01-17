@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { paginate, filterBySearch } from "../utils/listHelpers";
 
-export default function Receivables({ receivables = [], setReceivables }) {
-  const [client, setClient] = useState("");
+export default function Payables({ payables = [], setPayables }) {
+  const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -10,28 +10,27 @@ export default function Receivables({ receivables = [], setReceivables }) {
   const PAGE_SIZE = 5;
 
   function add() {
-    if (!client || !amount) return;
-    setReceivables([
-      ...receivables,
-      { id: Date.now(), client, amount: Number(amount) }
+    if (!vendor || !amount) return;
+    setPayables([
+      ...payables,
+      { id: Date.now(), vendor, amount: Number(amount) }
     ]);
-    setClient("");
+    setVendor("");
     setAmount("");
   }
 
   function remove(id) {
-    setReceivables(receivables.filter(r => r.id !== id));
+    setPayables(payables.filter(p => p.id !== id));
   }
 
-  const filtered = filterBySearch(receivables, search, ["client"]);
+  const filtered = filterBySearch(payables, search, ["vendor"]);
   const paged = paginate(filtered, page, PAGE_SIZE);
 
   return (
     <div>
-      {/* HEADER */}
       <div className="module-header">
         <input
-          placeholder="Search client..."
+          placeholder="Search vendor..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -40,44 +39,43 @@ export default function Receivables({ receivables = [], setReceivables }) {
       {/* FORM */}
       <div className="form-card">
         <input
-          placeholder="Client Name"
-          value={client}
-          onChange={e => setClient(e.target.value)}
+          placeholder="Vendor"
+          value={vendor}
+          onChange={e => setVendor(e.target.value)}
         />
         <input
           placeholder="Amount"
           value={amount}
           onChange={e => setAmount(e.target.value)}
         />
-        <button onClick={add}>Add Receivable</button>
+        <button onClick={add}>Add</button>
       </div>
 
       {/* LIST */}
       <div className="data-list">
         <div className="data-list-header">
-          <span>Client</span>
+          <span>Vendor</span>
           <span>Amount</span>
           <span>Status</span>
           <span>Action</span>
         </div>
 
-        {paged.map(r => (
-          <div className="data-row" key={r.id}>
-            <span>{r.client}</span>
-            <span>₹ {r.amount}</span>
-            <span className="badge-pill badge-blue">Pending</span>
-            <button onClick={() => remove(r.id)}>🗑</button>
+        {paged.map(p => (
+          <div className="data-row" key={p.id}>
+            <span>{p.vendor}</span>
+            <span>₹ {p.amount}</span>
+            <span className="badge-pill badge-red">Due</span>
+            <button onClick={() => remove(p.id)}>🗑</button>
           </div>
         ))}
 
         {paged.length === 0 && (
           <div className="data-row">
-            <span>No receivables found</span>
+            <span>No payables found</span>
           </div>
         )}
       </div>
 
-      {/* PAGINATION */}
       <Pagination
         page={page}
         total={filtered.length}
@@ -88,7 +86,7 @@ export default function Receivables({ receivables = [], setReceivables }) {
   );
 }
 
-/* ✅ REQUIRED PAGINATION COMPONENT */
+/* ✅ MISSING COMPONENT (THIS FIXES THE BUG) */
 function Pagination({ page, total, size, setPage }) {
   const pages = Math.ceil(total / size);
   if (pages <= 1) return null;

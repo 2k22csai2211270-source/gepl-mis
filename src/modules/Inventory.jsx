@@ -1,82 +1,90 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import PageWrapper from "../layout/PageWrapper";
-import { exportToPDF, exportToExcel } from "../utils/export";
-
+import { paginate, filterBySearch } from "../utils/listHelpers";
 
 export default function Inventory({ inventory, setInventory }) {
-    const [name, setName] = useState("");
-    const [qty, setQty] = useState("");
+  const [name, setName] = useState("");
+  const [qty, setQty] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-    function addItem(e) {
-        e.preventDefault();
-        if (!name || !qty) return;
+  const PAGE_SIZE = 5;
 
-        setInventory([...inventory, { name, qty: Number(qty) }]);
-        setName("");
-        setQty("");
-    }
+  function addItem() {
+    if (!name || !qty) return;
+    setInventory([...inventory, { id: Date.now(), name, qty: Number(qty) }]);
+    setName("");
+    setQty("");
+  }
 
-    return (
-        <PageWrapper>
-            <h2>Inventory Management</h2>
-            <p style={{ color: "var(--text-muted)", marginBottom: 20 }}>
-                Track raw materials, WIP, and finished goods
-            </p>
-            <button
-                onClick={() =>
-                    exportToPDF(
-                        "Inventory Report",
-                        ["Item Name", "Quantity"],
-                        inventory.map(i => [i.name, i.qty])
-                    )
-                }
-            >
-                Export PDF
-            </button>
+  function remove(id) {
+    setInventory(inventory.filter(i => i.id !== id));
+  }
 
-            <button
-                onClick={() => exportToExcel("Inventory Report", inventory)}
-            >
-                Export Excel
-            </button>
+  const filtered = filterBySearch(inventory, search, ["name"]);
+  const paged = paginate(filtered, page, PAGE_SIZE);
 
+  return (
+    <div>
+      <div className="module-header">
+  
+        <input
+          placeholder="Search item..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
 
+      <div className="form-card">
+        <input placeholder="Item Name" value={name} onChange={e => setName(e.target.value)} />
+        <input placeholder="Quantity" value={qty} onChange={e => setQty(e.target.value)} />
+        <button onClick={addItem}>Add Item</button>
+      </div>
 
-            <form onSubmit={addItem} style={{ marginBottom: 20 }}>
-                <input
-                    placeholder="Item name"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="Quantity"
-                    value={qty}
-                    onChange={e => setQty(e.target.value)}
-                />
-                <button>Add</button>
-            </form>
+      <div className="data-list">
+        <div className="data-list-header">
+          <span>Item</span>
+          <span>Qty</span>
+          <span>Status</span>
+          <span>Action</span>
+        </div>
 
-            {inventory.map((item, index) => (
-                <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="card-hover"
-                    style={{
-                        padding: 12,
-                        marginBottom: 10,
-                        borderRadius: 8,
-                        background: "var(--bg-sidebar)"
-                    }}
-                >
-                    <b>{item.name}</b> — Qty: {item.qty}
-                </motion.div>
+        {paged.map(i => (
+          <div className="data-row" key={i.id}>
+            <span>{i.name}</span>
+            <span>{i.qty}</span>
+            <span className={`badge-pill ${i.qty < 50 ? "badge-red" : "badge-green"}`}>
+              {i.qty < 50 ? "Low" : "OK"}
+            </span>
+            <button onClick={() => remove(i.id)}>🗑</button>
+          </div>
+        ))}
+      </div>
 
-            ))}
-        </PageWrapper>
-    );
+      <Pagination
+        page={page}
+        total={filtered.length}
+        size={PAGE_SIZE}
+        setPage={setPage}
+      />
+    </div>
+  );
 }
 
+function Pagination({ page, total, size, setPage }) {
+  const pages = Math.ceil(total / size);
+  if (pages <= 1) return null;
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      {Array.from({ length: pages }).map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setPage(i + 1)}
+          className={page === i + 1 ? "active" : ""}
+        >
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  );
+}
