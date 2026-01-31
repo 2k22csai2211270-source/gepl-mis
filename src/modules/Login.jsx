@@ -1,53 +1,70 @@
 import { useState } from "react";
+import { loginApi } from "../api/authApi";
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, onSignup }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const USERS = {
-    admin: { password: "admin123", role: "admin" },
-    finance: { password: "fin123", role: "finance" },
-    production: { password: "prod123", role: "production" },
-    purchase: { password: "pur123", role: "purchase" }
-  };
-
-  function handleLogin() {
-    const user = USERS[username];
-    if (!user || user.password !== password) {
-      setError("Invalid username or password");
+  async function handleLogin() {
+    if (!username || !password) {
+      setError("Enter username and password");
       return;
     }
-    onLogin({ username, role: user.role });
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await loginApi(username, password);
+
+      // SAVE TOKEN
+      localStorage.setItem("token", data.token);
+
+      onLogin({
+        userName: data.username,
+        role: data.role,
+        token: data.token
+      });
+
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div style={{
-      height: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "radial-gradient(circle at top,#020617,#000)"
-    }}>
-      <div className="card" style={{ width: 380 }}>
-        <h2>GEPL MIS</h2>
-        <p style={{ color: "var(--text-muted)" }}>
-          Secure enterprise access
-        </p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>GEPL MIS Login</h2>
 
         <input
           placeholder="Username"
+          value={username}
           onChange={e => setUsername(e.target.value)}
         />
+
         <input
           type="password"
           placeholder="Password"
+          value={password}
           onChange={e => setPassword(e.target.value)}
         />
 
-        {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleLogin} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <p className="auth-footer">
+          New user?{" "}
+          <span className="link" onClick={onSignup}>
+            Create account
+          </span>
+        </p>
       </div>
     </div>
   );

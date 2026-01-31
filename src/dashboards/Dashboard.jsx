@@ -1,231 +1,245 @@
 import { useEffect, useState } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-} from "chart.js";
-import { Bar, Pie, Line } from "react-chartjs-2";
-import { generateAlerts } from "../utils/alerts";
+import { getDashboardSummary } from "../services/dashboardService";
 
-/* ================= CHART REGISTRATION ================= */
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-);
+const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
 
-/* ================= ANIMATED NUMBER HOOK ================= */
-function useAnimatedNumber(value) {
-  const [display, setDisplay] = useState(value);
-
-  useEffect(() => {
-    let start = display;
-    let end = value;
-    let startTime = null;
-
-    function animate(time) {
-      if (!startTime) startTime = time;
-      const progress = Math.min((time - startTime) / 600, 1);
-      setDisplay(Math.floor(start + (end - start) * progress));
-      if (progress < 1) requestAnimationFrame(animate);
-    }
-
-    requestAnimationFrame(animate);
-  }, [value]);
-
-  return display;
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  };
 }
 
-export default function Dashboard({
-  user,
-  onLogout,
-  cashData = [],
-  receivables = [],
-  payables = [],
-  inventory = [],
-  production = []
-}) {
-  const [showProfile, setShowProfile] = useState(false);
-  const [showNotif, setShowNotif] = useState(false);
-
-  /* ================= KPI CALCULATIONS ================= */
-  const cashBalance = cashData.reduce(
-    (s, c) => s + (c.type === "in" ? c.amount : -c.amount),
-    0
-  );
-  const totalReceivables = receivables.reduce((s, r) => s + r.amount, 0);
-  const totalPayables = payables.reduce((s, p) => s + p.amount, 0);
-
-  const cashAnim = useAnimatedNumber(cashBalance);
-  const recAnim = useAnimatedNumber(totalReceivables);
-  const payAnim = useAnimatedNumber(totalPayables);
-  const invAnim = useAnimatedNumber(inventory.length);
-
-  const trend = v => (v > 0 ? "up" : v < 0 ? "down" : "same");
-
-  /* ================= ALERTS ================= */
-  const alerts = generateAlerts({
-    receivables,
-    payables,
-    inventory,
-    production
+const money = n =>
+  Number(n || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2
   });
 
-  /* ================= CHART DATA ================= */
+export default function Dashboard({ user, onLogout }) {
 
-  /* BAR */
-  const barData = {
-    labels: ["Receivables", "Payables"],
-    datasets: [
-      {
-        label: "Amount (₹)",
-        data: [totalReceivables, totalPayables],
-        backgroundColor: ["#38bdf8", "#ef4444"],
-        borderRadius: 10
-      }
-    ]
-  };
+  /* ================= MAIN DASHBOARD ================= */
+  const [summary, setSummary] = useState(null);
 
-  const barOptions = {
-    animation: {
-      duration: 900,
-      easing: "easeOutQuart"
-    },
-    plugins: {
-      legend: { display: false }
+  useEffect(() => {
+    loadSummary();
+  }, []);
+
+  async function loadSummary() {
+    const res = await getDashboardSummary();
+    setSummary(res);
+  }
+
+  /* ================= PROFILE MODAL ================= */
+  const [showProfile, setShowProfile] = useState(false);
+
+  /* ================= PROJECT DASHBOARD ================= */
+  const [projectId, setProjectId] = useState("");
+  const [projectData, setProjectData] = useState(null);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+
+  async function openProjectDashboard() {
+    if (!projectId) return alert("Enter Project ID");
+
+    try {
+      const res = await fetch(
+        `${BASE_URL}/api/kpi/projects/${projectId}`,
+        { headers: authHeaders() }
+      );
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+      setProjectData(data);
+      setShowProjectModal(true);
+
+    } catch {
+      alert("Invalid Project ID");
     }
-  };
+  }
 
-  /* PIE */
-  const pieData = {
-    labels: inventory.map(i => i.name),
-    datasets: [
-      {
-        data: inventory.map(i => i.qty),
-        backgroundColor: ["#22c55e", "#f59e0b", "#38bdf8", "#ef4444"]
-      }
-    ]
-  };
-
-  const pieOptions = {
-    animation: {
-      animateRotate: true,
-      duration: 900,
-      easing: "easeOutCubic"
-    }
-  };
-
-  /* LINE – CASH FLOW */
-  const lineData = {
-    labels: cashData.map((_, i) => `Txn ${i + 1}`),
-    datasets: [
-      {
-        label: "Cash Flow (₹)",
-        data: cashData.reduce((arr, c, i) => {
-          const prev = arr[i - 1] || 0;
-          arr.push(prev + (c.type === "in" ? c.amount : -c.amount));
-          return arr;
-        }, []),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.25)",
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4
-      }
-    ]
-  };
-
-  const lineOptions = {
-    animation: {
-      duration: 1200,
-      easing: "easeOutQuart"
-    }
-  };
+  if (!summary) return "Loading...";
 
   return (
     <div>
+
       {/* ================= HEADER ================= */}
       <div className="dash-header">
         <div>
           <h1>Executive Dashboard</h1>
-          <p>Welcome back, <b>{user.username}</b></p>
+          <p>Welcome, <b>{user.username}</b></p>
         </div>
 
         <div className="dash-actions">
-          <button className="icon-btn" onClick={() => document.body.classList.toggle("light")}>🌗</button>
-
-          <button className="icon-btn" onClick={() => setShowNotif(!showNotif)}>
-            🔔 {alerts.length > 0 && <span className="badge">{alerts.length}</span>}
+          {/* 🌗 THEME TOGGLE */}
+          <button
+            className="icon-btn"
+            onClick={() => document.body.classList.toggle("light")}
+          >
+            🌗
           </button>
 
-          <button className="icon-btn" onClick={() => setShowProfile(true)}>👤</button>
-          <button className="logout-btn" onClick={onLogout}>Logout</button>
-        </div>
+          {/* 👤 PROFILE BUTTON */}
+          <button
+            className="icon-btn"
+            onClick={() => setShowProfile(true)}
+          >
+            👤
+          </button>
 
-        {showNotif && (
-          <div className="notif-panel">
-            {alerts.map((a, i) => (
-              <div key={i} className="notif-item">{a}</div>
-            ))}
-          </div>
-        )}
+          <button className="logout-btn" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </div>
+
 
       {/* ================= KPI GRID ================= */}
       <div className="kpi-grid">
-        <div className="card kpi cash">
+        <div className="card kpi">
           <span>💰 Cash</span>
-          <b>₹ {cashAnim}</b>
-          <i className={trend(cashBalance)}>▲</i>
+          <b>₹ {money(summary.netCashPosition)}</b>
         </div>
 
         <div className="card kpi receivables">
           <span>📥 Receivables</span>
-          <b>₹ {recAnim}</b>
-          <i className={trend(totalReceivables)}>▲</i>
+          <b>₹ {money(summary.totalReceivableOutstanding)}</b>
         </div>
 
         <div className="card kpi payables">
           <span>📤 Payables</span>
-          <b>₹ {payAnim}</b>
-          <i className={trend(totalPayables)}>▲</i>
+          <b>₹ {money(summary.totalPayableOutstanding)}</b>
+        </div>
+        <div className="card kpi inventory">
+          <span>📊 Projects</span>
+          <b>{summary.totalProjects}</b>
         </div>
 
         <div className="card kpi inventory">
-          <span>📦 Inventory</span>
-          <b>{invAnim}</b>
-          <i className={trend(inventory.length)}>▲</i>
-        </div>
-      </div>
-
-      {/* ================= CHARTS ================= */}
-      <div className="chart-grid">
-        <div className="card">
-          <h3>Receivables vs Payables</h3>
-          <Bar data={barData} options={barOptions} />
+          <span>🚀 Active</span>
+          <b>{summary.activeProjects}</b>
         </div>
 
-        <div className="card">
-          <h3>Inventory Distribution</h3>
-          {inventory.length ? <Pie data={pieData} options={pieOptions} /> : "No inventory data"}
+
+        <div className="card kpi">
+          <span>📥 Cash In</span>
+          <b>₹ {money(summary.totalCashIn)}</b>
         </div>
+
+        <div className="card kpi">
+          <span>📤 Cash Out</span>
+          <b>₹ {money(summary.totalCashOut)}</b>
+        </div>
+
+
+        <div className="card kpi payables">
+          <span>❤️ Cash Health</span>
+          <b>{summary.cashHealth}</b>
+        </div>
+
       </div>
 
-      <div className="card" style={{ marginTop: 20 }}>
-        <h3>Cash Flow Trend</h3>
-        {cashData.length ? <Line data={lineData} options={lineOptions} /> : "No cash transactions"}
+      {/* ================= PROJECT ID FORM ================= */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3>Open Project Dashboard</h3>
+
+        <input
+          placeholder="Enter Project ID"
+          value={projectId}
+          onChange={e => setProjectId(e.target.value)}
+        />
+
+        <button onClick={openProjectDashboard}>
+          Open
+        </button>
       </div>
+      {/* ================= PROJECT DASHBOARD MODAL ================= */}
+      {showProjectModal && projectData && (
+        <div className="modal">
+          <div className="modal-card">
+
+            <h2>Project Dashboard</h2>
+
+            <div className="kpi-grid">
+
+              <div className="card kpi inventory">
+                <span>🆔 Project ID</span>
+                <b>{projectData.projectId}</b>
+              </div>
+
+              <div className="card kpi inventory">
+                <span>🏷 Project Code</span>
+                <b>{projectData.projectCode}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>💰 Planned Budget</span>
+                <b>₹ {money(projectData.plannedBudget)}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>💸 Actual Spend</span>
+                <b>₹ {money(projectData.actualSpend)}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>📊 Budget Used</span>
+                <b>{projectData.budgetUtilizationPercent}%</b>
+              </div>
+
+              <div className="card kpi">
+                <span>📥 Cash In</span>
+                <b>₹ {money(projectData.cashIn)}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>📤 Cash Out</span>
+                <b>₹ {money(projectData.cashOut)}</b>
+              </div>
+
+              <div className="card kpi receivables">
+                <span>📥 Receivables</span>
+                <b>₹ {money(projectData.receivableOutstanding)}</b>
+              </div>
+
+              <div className="card kpi payables">
+                <span>📤 Payables</span>
+                <b>₹ {money(projectData.payableOutstanding)}</b>
+              </div>
+
+              <div className="card kpi inventory">
+                <span>📦 Inventory Used</span>
+                <b>{projectData.inventoryConsumed}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>💵 Cost Status</span>
+                <b>{projectData.costStatus}</b>
+              </div>
+
+              <div className="card kpi">
+                <span>🌊 Cash Flow</span>
+                <b>{projectData.cashFlowStatus}</b>
+              </div>
+
+              <div className="card kpi receivables">
+                <span>⚠ Receivable Risk</span>
+                <b>{projectData.receivableRisk}</b>
+              </div>
+
+            </div>
+
+            <button
+              style={{ marginTop: 20 }}
+              onClick={() => setShowProjectModal(false)}
+            >
+              Close
+            </button>
+
+          </div>
+        </div>
+      )}
+
 
       {/* ================= PROFILE MODAL ================= */}
       {showProfile && (
@@ -234,10 +248,14 @@ export default function Dashboard({
             <h3>User Profile</h3>
             <p><b>Username:</b> {user.username}</p>
             <p><b>Role:</b> {user.role}</p>
-            <button onClick={() => setShowProfile(false)}>Close</button>
+
+            <button onClick={() => setShowProfile(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }

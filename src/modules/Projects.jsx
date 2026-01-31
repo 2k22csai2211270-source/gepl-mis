@@ -1,97 +1,276 @@
-import { useState } from "react";
-import { paginate, filterBySearch } from "../utils/listHelpers";
+import { useEffect, useState } from "react";
+import {
+  getProjects,
+  addProject as addProjectApi,
+  updateProject
+} from "../services/projectService";
 
-export default function Projects({ projects = [], setProjects }) {
-  const [name, setName] = useState("");
-  const [search, setSearch] = useState("");
+const PAGE_SIZE = 5;
+
+export default function Projects() {
+  const [projects, setProjects] = useState([]);
   const [page, setPage] = useState(1);
-  const [editItem, setEditItem] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [editId, setEditId] = useState(null);
 
-  const PAGE_SIZE = 5;
+  const [form, setForm] = useState({
+    projectName: "",
+    projectCode: "",
+    clientName: "",
+    plannedStartDate: "",
+    plannedEndDate: "",
+    plannedBudget: "",
+    completed: ""
+  });
 
-  function add() {
-    if (!name) return;
-    setProjects([...projects, { id: Date.now(), name }]);
-    setName("");
+  /* ================= LOAD ================= */
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  async function loadProjects(p = page) {
+    try {
+      const res = await getProjects(p - 1, PAGE_SIZE);
+      const list = Array.isArray(res?.content) ? res.content : [];
+
+      setProjects(list);
+      setTotalPages(res.totalPages || 1);
+    } catch (err) {
+      console.error("Load failed", err);
+      setProjects([]);
+    }
   }
 
-  function remove(id) {
-    setProjects(projects.filter(p => p.id !== id));
+  /* ================= ADD / UPDATE ================= */
+  async function submitProject() {
+    if (
+      !form.projectName ||
+      !form.projectCode ||
+      !form.plannedStartDate ||
+      !form.plannedEndDate
+    )
+      return;
+
+    try {
+      if (editId) {
+        await updateProject(editId, form);
+      } else {
+        await addProjectApi(form);
+      }
+
+      resetForm();
+      setEditId(null);
+      loadProjects();
+    } catch (err) {
+      console.error("Save failed", err);
+      alert("Save failed");
+    }
   }
 
-  function saveEdit() {
-    setProjects(projects.map(p => p.id === editItem.id ? editItem : p));
-    setEditItem(null);
+  function editRow(index) {
+    const p = projects[index];
+    setForm(p);
+    setEditId(p.id);
   }
 
-  const filtered = filterBySearch(projects, search, ["name"]);
-  const paged = paginate(filtered, page, PAGE_SIZE);
+  function resetForm() {
+    setForm({
+      projectName: "",
+      projectCode: "",
+      clientName: "",
+      plannedStartDate: "",
+      plannedEndDate: "",
+      plannedBudget: "",
+      completed: ""
+    });
+  }
+
+  /* ================= STATUS LOGIC ================= */
+  function projectStatus(p) {
+    const today = new Date();
+    const end = new Date(p.plannedEndDate);
+
+    today.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (p.completed) {
+      const completed = new Date(p.completed);
+      const delay = Math.floor((completed - end) / 86400000);
+
+      if (delay > 0)
+        return {
+          text: `Completed (Late by ${delay} days)`,
+          className: "delay-bar delay-red"
+        };
+
+      return {
+        text: "Completed",
+        className: "delay-bar delay-green"
+      };
+    }
+
+    if (today > end) {
+      const delay = Math.floor((today - end) / 86400000);
+      return {
+        text: `Delayed by ${delay} days`,
+        className: "delay-bar delay-red"
+      };
+    }
+
+    return {
+      text: "On Track",
+      className: "delay-bar delay-orange"
+    };
+  }
 
   return (
-    <div>
-      <div className="module-header">
-        <input placeholder="Search project..." value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
+    <div className="page">
+      <h2>Projects</h2>
 
-      <div className="form-card">
-        <input placeholder="Project Name" value={name} onChange={e => setName(e.target.value)} />
-        <button onClick={add}>Add</button>
-      </div>
-
-      <div className="data-list">
-        <div className="data-list-header">
-          <span>Name</span>
-          <span>Status</span>
-          <span>Action</span>
-        </div>
-
-        {paged.map(p => (
-          <div key={p.id} className="data-row">
-            <span>{p.name}</span>
-            <span className="badge-pill badge-green">Active</span>
-            <span>
-              <button onClick={() => setEditItem(p)}>✏️</button>
-              <button onClick={() => remove(p.id)}>🗑</button>
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <Pagination page={page} total={filtered.length} size={PAGE_SIZE} setPage={setPage} />
-
-      {editItem && (
-        <EditModal onClose={() => setEditItem(null)}>
-          <h3>Edit Project</h3>
+      {/* FORM */}
+      <div className="card">
+        <div className="form-row">
           <input
-            value={editItem.name}
-            onChange={e => setEditItem({ ...editItem, name: e.target.value })}
+            placeholder="Project Name"
+            value={form.projectName}
+            onChange={e =>
+              setForm({ ...form, projectName: e.target.value })
+            }
           />
-          <button onClick={saveEdit}>Save</button>
-        </EditModal>
-      )}
-    </div>
-  );
-}
+          <input
+            placeholder="Project Code"
+            value={form.projectCode}
+            onChange={e =>
+              setForm({ ...form, projectCode: e.target.value })
+            }
+          />
+          <input
+            placeholder="Client Name"
+            value={form.clientName}
+            onChange={e =>
+              setForm({ ...form, clientName: e.target.value })
+            }
+          />
+          <input
+            type="date"
+            value={form.plannedStartDate}
+            onChange={e =>
+              setForm({
+                ...form,
+                plannedStartDate: e.target.value
+              })
+            }
+          />
+          <input
+            type="date"
+            value={form.plannedEndDate}
+            onChange={e =>
+              setForm({
+                ...form,
+                plannedEndDate: e.target.value
+              })
+            }
+          />
+          <input
+            type="number"
+            placeholder="Planned Budget"
+            value={form.plannedBudget}
+            onChange={e =>
+              setForm({
+                ...form,
+                plannedBudget: e.target.value
+              })
+            }
+          />
 
-function Pagination({ page, total, size, setPage }) {
-  const pages = Math.ceil(total / size);
-  if (pages <= 1) return null;
-  return (
-    <div style={{ marginTop: 16 }}>
-      {Array.from({ length: pages }).map((_, i) => (
-        <button key={i} onClick={() => setPage(i + 1)}>{i + 1}</button>
-      ))}
-    </div>
-  );
-}
-
-function EditModal({ children, onClose }) {
-  return (
-    <div className="modal">
-      <div className="modal-card">
-        {children}
-        <button onClick={onClose}>Close</button>
+          <button onClick={submitProject}>
+            {editId ? "Update" : "Add"}
+          </button>
+        </div>
       </div>
+
+      {/* TABLE */}
+      <div className="card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Project Code</th>
+              <th>Project Name</th>
+              <th>Client</th>
+              <th>Planned Start</th>
+              <th>Planned End</th>
+              <th>Planned Budget</th>
+              <th>Status</th>
+              <th>Created By</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((p, i) => {
+              const status = projectStatus(p);
+              return (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.projectCode}</td>
+                  <td>{p.projectName}</td>
+                  <td>{p.clientName || "-"}</td>
+                  <td>{p.plannedStartDate}</td>
+                  <td>{p.plannedEndDate}</td>
+                  <td>₹ {p.plannedBudget || 0}</td>
+                  <td>
+                    <div className={status.className}>
+                      {status.text}
+                    </div>
+                  </td>
+                  <td>{p.createdBy || "-"}</td>
+                  <td>
+                    {p.createdAt
+                      ? new Date(p.createdAt).toLocaleString()
+                      : "-"}
+                  </td>
+                  <td>
+                    {p.updatedAt
+                      ? new Date(p.updatedAt).toLocaleString()
+                      : "-"}
+                  </td>
+                  <td>
+                    <button onClick={() => editRow(i)}>
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+
+            {projects.length === 0 && (
+              <tr>
+                <td colSpan="12">No projects</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={page === i + 1 ? "active" : ""}
+              onClick={() => {
+                setPage(i + 1);
+                loadProjects(i + 1);
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

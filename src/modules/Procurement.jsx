@@ -1,97 +1,171 @@
-import { useState } from "react";
-import { paginate, filterBySearch } from "../utils/listHelpers";
+import { useEffect, useState } from "react";
+import {
+  getProcurements,
+  addProcurement,
+  updateProcurement
+} from "../services/procurementService";
 
-export default function Procurement({ procurement = [], setProcurement }) {
-  const [item, setItem] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [editItem, setEditItem] = useState(null);
+const PAGE_SIZE = 5;
 
-  const PAGE_SIZE = 5;
+export default function Procurement() {
+  const [data,setData]=useState([]);
+  const [page,setPage]=useState(1);
+  const [totalPages,setTotalPages]=useState(1);
 
-  function add() {
-    if (!item) return;
-    setProcurement([...procurement, { id: Date.now(), item }]);
-    setItem("");
+  const [form,setForm]=useState({
+    projectId:"",
+    bomVersion:"",
+    partNo:"",
+    description:"",
+    supplier:"",
+    plannedQty:"",
+    orderedQty:"",
+    receivedQty:"",
+    rate:"",
+    leadTime:"",
+  });
+
+  const [editingIndex,setEditingIndex]=useState(null);
+
+  /* LOAD FROM API */
+  useEffect(()=>{ loadData(); },[]);
+
+  async function loadData(p=page){
+    try{
+      const res=await getProcurements(p-1,PAGE_SIZE);
+      setData(res.content || []);
+      setTotalPages(res.totalPages || 1);
+    }catch(err){
+      console.error("Load failed",err);
+    }
   }
 
-  function remove(id) {
-    setProcurement(procurement.filter(p => p.id !== id));
+  /* ADD / UPDATE */
+  async function submit(){
+
+    const payload={
+      ...form,
+      plannedQty:Number(form.plannedQty||0),
+      orderedQty:Number(form.orderedQty||0),
+      receivedQty:Number(form.receivedQty||0),
+      rate:Number(form.rate||0),
+      leadTime:Number(form.leadTime||0)
+    };
+
+    try{
+      if(editingIndex!==null){
+        const id=data[editingIndex].id;
+        await updateProcurement(id,payload);
+      }else{
+        await addProcurement(payload);
+      }
+
+      resetForm();
+      setEditingIndex(null);
+      loadData();
+    }catch(err){
+      console.error("Save failed",err);
+      alert("Save failed");
+    }
   }
 
-  function saveEdit() {
-    setProcurement(procurement.map(p => p.id === editItem.id ? editItem : p));
-    setEditItem(null);
+  function resetForm(){
+    setForm({
+      projectId:"",
+      bomVersion:"",
+      partNo:"",
+      description:"",
+      supplier:"",
+      plannedQty:"",
+      orderedQty:"",
+      receivedQty:"",
+      rate:"",
+      leadTime:""
+    });
   }
 
-  const filtered = filterBySearch(procurement, search, ["item"]);
-  const paged = paginate(filtered, page, PAGE_SIZE);
+  function editRow(index){
+    setForm(data[index]);
+    setEditingIndex(index);
+  }
 
-  return (
-    <div>
-      <div className="module-header">
-       
-        <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
+  return(
+    <div className="page">
+      <h2>Procurement</h2>
 
-      <div className="form-card">
-        <input placeholder="Material Name" value={item} onChange={e => setItem(e.target.value)} />
-        <button onClick={add}>Add</button>
-      </div>
+      {/* FORM */}
+      <div className="card">
+        <div className="form-row">
 
-      <div className="data-list">
-        <div className="data-list-header">
-          <span>Item</span>
-          <span>Status</span>
-          <span>Action</span>
+          <input placeholder="Project ID" value={form.projectId} onChange={e=>setForm({...form,projectId:e.target.value})}/>
+          <input placeholder="BOM Version" value={form.bomVersion} onChange={e=>setForm({...form,bomVersion:e.target.value})}/>
+          <input placeholder="Part No" value={form.partNo} onChange={e=>setForm({...form,partNo:e.target.value})}/>
+          <input placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/>
+          <input placeholder="Supplier" value={form.supplier} onChange={e=>setForm({...form,supplier:e.target.value})}/>
+          <input type="number" placeholder="Planned Qty" value={form.plannedQty} onChange={e=>setForm({...form,plannedQty:e.target.value})}/>
+          <input type="number" placeholder="Ordered Qty" value={form.orderedQty} onChange={e=>setForm({...form,orderedQty:e.target.value})}/>
+          <input type="number" placeholder="Received Qty" value={form.receivedQty} onChange={e=>setForm({...form,receivedQty:e.target.value})}/>
+          <input type="number" placeholder="Rate" value={form.rate} onChange={e=>setForm({...form,rate:e.target.value})}/>
+          <input type="number" placeholder="Lead Time" value={form.leadTime} onChange={e=>setForm({...form,leadTime:e.target.value})}/>
+
+          <button onClick={submit}>
+            {editingIndex!==null?"Update":"Add"}
+          </button>
         </div>
-
-        {paged.map(p => (
-          <div key={p.id} className="data-row">
-            <span>{p.item}</span>
-            <span className="badge-pill badge-blue">Ordered</span>
-            <span>
-              <button onClick={() => setEditItem(p)}>✏️</button>
-              <button onClick={() => remove(p.id)}>🗑</button>
-            </span>
-          </div>
-        ))}
       </div>
 
-      <Pagination page={page} total={filtered.length} size={PAGE_SIZE} setPage={setPage} />
+      {/* TABLE */}
+      <div className="card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Project ID</th><th>BOM Version</th>
+              <th>Part No</th><th>Description</th><th>Supplier</th>
+              <th>Planned Qty</th><th>Ordered Qty</th><th>Received Qty</th>
+              <th>Rate</th><th>Total Value</th><th>Lead Time</th>
+              <th>Excess Qty</th><th>Created At</th><th>Updated At</th><th>Action</th>
+            </tr>
+          </thead>
 
-      {editItem && (
-        <EditModal onClose={() => setEditItem(null)}>
-          <h3>Edit Procurement</h3>
-          <input
-            value={editItem.item}
-            onChange={e => setEditItem({ ...editItem, item: e.target.value })}
-          />
-          <button onClick={saveEdit}>Save</button>
-        </EditModal>
-      )}
-    </div>
-  );
-}
+          <tbody>
+            {data.map((row,i)=>{
+              const totalValue=(row.orderedQty||0)*(row.rate||0);
+              const excess=(row.receivedQty||0)-(row.orderedQty||0);
 
-function Pagination({ page, total, size, setPage }) {
-  const pages = Math.ceil(total / size);
-  if (pages <= 1) return null;
-  return (
-    <div style={{ marginTop: 16 }}>
-      {Array.from({ length: pages }).map((_, i) => (
-        <button key={i} onClick={() => setPage(i + 1)}>{i + 1}</button>
-      ))}
-    </div>
-  );
-}
+              return(
+                <tr key={row.id}>
+                  <td>{row.id}</td>
+                  <td>{row.projectId}</td>
+                  <td>{row.bomVersion}</td>
+                  <td>{row.partNo}</td>
+                  <td>{row.description}</td>
+                  <td>{row.supplier}</td>
+                  <td>{row.plannedQty}</td>
+                  <td>{row.orderedQty}</td>
+                  <td>{row.receivedQty}</td>
+                  <td>₹ {row.rate}</td>
+                  <td><b>₹ {totalValue}</b></td>
+                  <td>{row.leadTime}</td>
+                  <td>{row.excessQty}</td>
+                  <td>{row.createdAt?new Date(row.createdAt).toLocaleString():"-"}</td>
+                  <td>{row.updatedAt?new Date(row.updatedAt).toLocaleString():"-"}</td>
+                  <td><button onClick={()=>editRow(i)}>Edit</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
-function EditModal({ children, onClose }) {
-  return (
-    <div className="modal">
-      <div className="modal-card">
-        {children}
-        <button onClick={onClose}>Close</button>
+      {/* PAGINATION */}
+      <div className="pagination">
+        {Array.from({length:totalPages}).map((_,i)=>(
+          <button key={i}
+            className={page===i+1?"active":""}
+            onClick={()=>{setPage(i+1);loadData(i+1);}}>
+            {i+1}
+          </button>
+        ))}
       </div>
     </div>
   );

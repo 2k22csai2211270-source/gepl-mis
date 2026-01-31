@@ -1,0 +1,30 @@
+const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
+
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  };
+}
+
+export async function getPayables(page = 0, size = 10) {
+  const res = await fetch(
+    `${BASE_URL}/api/payables?page=${page}&size=${size}`,
+    { headers: authHeaders() }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch payables");
+  return res.json();
+}
+
+export async function addPayable(data) {
+  const res = await fetch(`${BASE_URL}/api/payables`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(data)
+  });
+
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

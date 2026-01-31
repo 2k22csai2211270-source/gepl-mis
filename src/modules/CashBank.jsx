@@ -1,119 +1,285 @@
-import { useState } from "react";
-import { paginate, filterBySearch } from "../utils/listHelpers";
+import { useEffect, useState } from "react";
+import {
+  getCashTransactions,
+  addCashTransaction,
+  updateCashTransaction
+} from "../services/cashBankService";
 
-export default function CashBank({ cashData = [], setCashData }) {
-  const [type, setType] = useState("in");
-  const [amount, setAmount] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [editItem, setEditItem] = useState(null);
+const PAGE_SIZE = 10;
 
-  const PAGE_SIZE = 5;
+export default function CashBank({ user }) {
+  const [data, setData] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
 
-  function add() {
-    if (!amount) return;
-    setCashData([
-      ...cashData,
-      { id: Date.now(), type, amount: Number(amount) }
-    ]);
-    setAmount("");
+  // 🔥 Pagination state
+  const [page, setPage] = useState(0); // backend page (0-based)
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [form, setForm] = useState({
+    type: "IN",
+    amount: "",
+    category: "Advance",
+    referenceType: "Manual",
+    referenceId: "",
+    projectId: "",
+    description: "",
+    transactionDate: ""
+  });
+
+  /* ================= LOAD ================= */
+  useEffect(() => {
+    loadCash(0); // load first page initially
+  }, []);
+
+  async function loadCash(p = page) {
+    try {
+      const res = await getCashTransactions(p, PAGE_SIZE);
+
+      const list = Array.isArray(res?.content) ? res.content : [];
+
+      const normalized = list.map(item => ({
+        ...item,
+        type: item.type?.toUpperCase(),
+        transactionDate: item.txnDate
+      }));
+
+      setData(normalized);
+      setTotalPages(res.totalPages || 0);
+      setPage(p);
+    } catch (err) {
+      console.error("Load failed", err);
+      setData([]);
+    }
   }
 
-  function remove(id) {
-    setCashData(cashData.filter(c => c.id !== id));
+  /* ================= ADD / UPDATE ================= */
+  async function submit() {
+    if (!form.amount || !form.transactionDate) return;
+
+    const now = new Date().toISOString();
+
+    const payload = {
+      ...form,
+      txnDate: form.transactionDate,
+      amount: Number(form.amount),
+      createdBy: user?.username || "System",
+      createdAt:
+        editingIndex === null ? now : data[editingIndex].createdAt,
+      updatedAt: now
+    };
+
+    delete payload.transactionDate;
+
+    try {
+      if (editingIndex !== null) {
+        await updateCashTransaction(data[editingIndex].id, payload);
+        loadCash(page); // reload same page
+      } else {
+        await addCashTransaction(payload);
+        // 🔥 go to last page to show newly added record
+        loadCash(totalPages);
+      }
+
+      resetForm();
+      setEditingIndex(null);
+    } catch (err) {
+      console.error("Save failed", err);
+      alert("Save failed");
+    }
   }
 
-  function saveEdit() {
-    setCashData(
-      cashData.map(c =>
-        c.id === editItem.id ? editItem : c
-      )
-    );
-    setEditItem(null);
+  /* ================= EDIT ================= */
+  function editRow(index) {
+    const row = data[index];
+    setForm({
+      type: row.type,
+      amount: row.amount,
+      category: row.category,
+      referenceType: row.referenceType,
+      referenceId: row.referenceId,
+      projectId: row.projectId,
+      description: row.description,
+      transactionDate: row.transactionDate
+    });
+    setEditingIndex(index);
   }
 
-  const filtered = filterBySearch(cashData, search, ["type"]);
-  const paged = paginate(filtered, page, PAGE_SIZE);
+  function resetForm() {
+    setForm({
+      type: "IN",
+      amount: "",
+      category: "Advance",
+      referenceType: "Manual",
+      referenceId: "",
+      projectId: "",
+      description: "",
+      transactionDate: ""
+    });
+  }
 
+  /* ================= UI ================= */
   return (
-    <div>
-      <div className="module-header">
-   
-        <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
+    <div className="page">
+      <h2>Cash & Bank</h2>
 
-      <div className="form-card">
-        <select value={type} onChange={e => setType(e.target.value)}>
-          <option value="in">Cash In</option>
-          <option value="out">Cash Out</option>
-        </select>
-        <input placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
-        <button onClick={add}>Add</button>
-      </div>
-
-      <div className="data-list">
-        <div className="data-list-header">
-          <span>Type</span>
-          <span>Amount</span>
-          <span>Action</span>
-        </div>
-
-        {paged.map(c => (
-          <div key={c.id} className="data-row">
-            <span>{c.type === "in" ? "Credit" : "Debit"}</span>
-            <span>₹ {c.amount}</span>
-            <span>
-              <button onClick={() => setEditItem(c)}>✏️</button>
-              <button onClick={() => remove(c.id)}>🗑</button>
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <Pagination page={page} total={filtered.length} size={PAGE_SIZE} setPage={setPage} />
-
-      {editItem && (
-        <EditModal onClose={() => setEditItem(null)}>
-          <h3>Edit Transaction</h3>
+      {/* ================= FORM ================= */}
+      <div className="card">
+        <div className="form-row">
           <select
-            value={editItem.type}
-            onChange={e => setEditItem({ ...editItem, type: e.target.value })}
+            value={form.type}
+            onChange={e => setForm({ ...form, type: e.target.value })}
           >
-            <option value="in">Cash In</option>
-            <option value="out">Cash Out</option>
+            <option value="IN">IN</option>
+            <option value="OUT">OUT</option>
           </select>
+
           <input
-            value={editItem.amount}
-            onChange={e => setEditItem({ ...editItem, amount: Number(e.target.value) })}
+            type="number"
+            placeholder="Amount"
+            value={form.amount}
+            onChange={e => setForm({ ...form, amount: e.target.value })}
           />
-          <button onClick={saveEdit}>Save</button>
-        </EditModal>
-      )}
-    </div>
-  );
-}
 
-/* PAGINATION */
-function Pagination({ page, total, size, setPage }) {
-  const pages = Math.ceil(total / size);
-  if (pages <= 1) return null;
-  return (
-    <div style={{ marginTop: 16 }}>
-      {Array.from({ length: pages }).map((_, i) => (
-        <button key={i} onClick={() => setPage(i + 1)}>{i + 1}</button>
-      ))}
-    </div>
-  );
-}
+          <select
+            value={form.category}
+            onChange={e =>
+              setForm({ ...form, category: e.target.value })
+            }
+          >
+            <option>Advance</option>
+            <option>Expense</option>
+            <option>Payment</option>
+            <option>Refund</option>
+            <option>Receipt</option>
+            <option>Transfer</option>
+          </select>
 
-/* EDIT MODAL */
-function EditModal({ children, onClose }) {
-  return (
-    <div className="modal">
-      <div className="modal-card">
-        {children}
-        <button onClick={onClose}>Close</button>
+          <select
+            value={form.referenceType}
+            onChange={e =>
+              setForm({ ...form, referenceType: e.target.value })
+            }
+          >
+            <option>Manual</option>
+            <option>Receivables</option>
+            <option>Payables</option>
+          </select>
+
+          <input
+            placeholder="Reference ID"
+            value={form.referenceId}
+            onChange={e =>
+              setForm({ ...form, referenceId: e.target.value })
+            }
+          />
+
+          <input
+            placeholder="Project ID"
+            value={form.projectId}
+            onChange={e =>
+              setForm({ ...form, projectId: e.target.value })
+            }
+          />
+
+          <input
+            placeholder="Description"
+            value={form.description}
+            onChange={e =>
+              setForm({ ...form, description: e.target.value })
+            }
+          />
+
+          <input
+            type="date"
+            value={form.transactionDate}
+            onChange={e =>
+              setForm({ ...form, transactionDate: e.target.value })
+            }
+          />
+
+          <button onClick={submit}>
+            {editingIndex !== null ? "Update" : "Add"}
+          </button>
+        </div>
       </div>
+
+      {/* ================= TABLE ================= */}
+      <div className="card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Txn ID</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Ref Type</th>
+              <th>Ref ID</th>
+              <th>Project</th>
+              <th>Created By</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.length > 0 ? (
+              data.map((c, i) => (
+                <tr key={c.id || i}>
+                  <td>{c.transactionId || c.id}</td>
+                  <td>{c.type}</td>
+                  <td>₹ {c.amount}</td>
+                  <td>{c.transactionDate}</td>
+                  <td>{c.category}</td>
+                  <td>{c.referenceType}</td>
+                  <td>{c.referenceId || "-"}</td>
+                  <td>{c.projectId || "-"}</td>
+                  <td>{c.createdBy}</td>
+                  <td>{new Date(c.createdAt).toLocaleString()}</td>
+                  <td>{new Date(c.updatedAt).toLocaleString()}</td>
+                  <td>
+                    <button onClick={() => editRow(i)}>Edit</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="12">No transactions</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= PAGINATION ================= */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={page === 0}
+            onClick={() => loadCash(page - 1)}
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={page === i ? "active" : ""}
+              onClick={() => loadCash(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={page === totalPages - 1}
+            onClick={() => loadCash(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

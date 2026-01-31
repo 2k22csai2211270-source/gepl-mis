@@ -1,0 +1,64 @@
+const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
+
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  };
+}
+
+/* ============== GET (PAGEABLE) ============== */
+export async function getReceivables(page = 0, size = 10) {
+  const res = await fetch(
+    `${BASE_URL}/api/receivables?page=${page}&size=${size}`,
+    { headers: authHeaders() }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch receivables");
+  }
+
+  return res.json(); // pageable response (includes status)
+}
+
+/* ============== POST (CREATE) ============== */
+export async function addReceivable(data) {
+  const res = await fetch(`${BASE_URL}/api/receivables`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(data)
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
+}
+
+/* ============== PUT (UPDATE – STATUS INCLUDED) ============== */
+export async function updateReceivable(id, data) {
+  const res = await fetch(`${BASE_URL}/api/receivables/${id}/pay`, {
+    method: "POST", // ✅ FIXED (was POST)
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json(); // updated entity with status
+}
+
+/* ============== DELETE ============== */
+export async function deleteReceivable(id) {
+  const res = await fetch(`${BASE_URL}/api/receivables/${id}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+
+  if (!res.ok) {
+    throw new Error("Delete failed");
+  }
+}

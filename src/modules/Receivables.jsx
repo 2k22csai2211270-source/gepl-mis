@@ -1,109 +1,316 @@
-import { useState } from "react";
-import { paginate, filterBySearch } from "../utils/listHelpers";
+import { useEffect, useState } from "react";
+import { exportToExcel } from "../utils/exportExcel";
+import {
+  getReceivables,
+  addReceivable
+} from "../services/receivablesService";
+import { addCashTransaction } from "../services/cashBankService";
 
-export default function Receivables({ receivables = [], setReceivables }) {
-  const [client, setClient] = useState("");
-  const [amount, setAmount] = useState("");
+const PAGE_SIZE = 5;
+
+export default function Receivables() {
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const PAGE_SIZE = 5;
+  /* ================= RECEIVABLE FORM ================= */
+  const [form, setForm] = useState({
+    clientName: "",
+    projectId: "",
+    invoiceNo: "",
+    invoiceDate: "",
+    dueDate: "",
+    invoiceAmount: ""
+  });
 
-  function add() {
-    if (!client || !amount) return;
-    setReceivables([
-      ...receivables,
-      { id: Date.now(), client, amount: Number(amount) }
-    ]);
-    setClient("");
-    setAmount("");
+  /* ================= PAYMENT MODE ================= */
+  const [paymentMode, setPaymentMode] = useState(false);
+  const [selectedReceivable, setSelectedReceivable] = useState(null);
+  const [paymentForm, setPaymentForm] = useState({
+    paymentDate: "",
+    amount: ""
+  });
+
+  /* ================= LOAD ================= */
+  useEffect(() => {
+    loadReceivables();
+  }, []);
+
+  async function loadReceivables(p = page) {
+    try {
+      const res = await getReceivables(p - 1, PAGE_SIZE);
+      const list = Array.isArray(res?.content) ? res.content : [];
+      setData(list);
+      setTotalPages(res.totalPages || 1);
+    } catch (err) {
+      console.error("Load failed", err);
+      setData([]);
+    }
   }
 
-  function remove(id) {
-    setReceivables(receivables.filter(r => r.id !== id));
+  /* ================= ADD RECEIVABLE ================= */
+  async function submitReceivable() {
+    if (
+      !form.clientName ||
+      !form.invoiceNo ||
+      !form.invoiceAmount ||
+      !form.invoiceDate
+    ) {
+      alert("Client, Invoice No, Invoice Date & Amount are required");
+      return;
+    }
+
+    const payload = {
+      clientName: form.clientName,
+      projectId: form.projectId ? Number(form.projectId) : null,
+      invoiceNo: form.invoiceNo,
+      invoiceDate: form.invoiceDate,
+      dueDate: form.dueDate || null,
+      invoiceAmount: Number(form.invoiceAmount)
+    };
+
+    try {
+      await addReceivable(payload);
+      resetReceivableForm();
+      loadReceivables();
+    } catch (err) {
+      console.error("Save failed", err);
+      alert("Save failed");
+    }
   }
 
-  const filtered = filterBySearch(receivables, search, ["client"]);
-  const paged = paginate(filtered, page, PAGE_SIZE);
+  /* ================= RECEIVE PAYMENT ================= */
+  async function submitPayment() {
+    if (!paymentForm.paymentDate || !paymentForm.amount) {
+      alert("Payment date and amount are required");
+      return;
+    }
 
+    const payload = {
+      type: "IN",
+      amount: Number(paymentForm.amount),
+      category: "Receipt",
+      referenceType: "Receivables",
+      referenceId: selectedReceivable.id,
+      projectId: selectedReceivable.projectId,
+      description: `Payment received from ${selectedReceivable.clientName} (Invoice ${selectedReceivable.invoiceNo})`,
+      txnDate: paymentForm.paymentDate
+    };
+
+    try {
+      await addCashTransaction(payload);
+
+      alert("Payment successfully added to Cash");
+
+      setPaymentMode(false);
+      setSelectedReceivable(null);
+      setPaymentForm({ paymentDate: "", amount: "" });
+    } catch (err) {
+      console.error("Payment failed", err);
+      alert("Payment failed");
+    }
+  }
+
+  function resetReceivableForm() {
+    setForm({
+      clientName: "",
+      projectId: "",
+      invoiceNo: "",
+      invoiceDate: "",
+      dueDate: "",
+      invoiceAmount: ""
+    });
+  }
+
+  /* ================= SEARCH ================= */
+  const filtered = data.filter(r =>
+    r.clientName?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  /* ================= UI ================= */
   return (
-    <div>
-      {/* HEADER */}
-      <div className="module-header">
-        <input
-          placeholder="Search client..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
+    <div className="module">
+      <h2>Receivables</h2>
 
-      {/* FORM */}
-      <div className="form-card">
+      {/* ================= ADD RECEIVABLE ================= */}
+      <div className="card form-card">
+        <h3>Add Invoice</h3>
+
         <input
           placeholder="Client Name"
-          value={client}
-          onChange={e => setClient(e.target.value)}
+          value={form.clientName}
+          onChange={e => setForm({ ...form, clientName: e.target.value })}
         />
+
         <input
-          placeholder="Amount"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
+          type="number"
+          placeholder="Project ID"
+          value={form.projectId}
+          onChange={e => setForm({ ...form, projectId: e.target.value })}
         />
-        <button onClick={add}>Add Receivable</button>
+
+        <input
+          placeholder="Invoice No"
+          value={form.invoiceNo}
+          onChange={e => setForm({ ...form, invoiceNo: e.target.value })}
+        />
+
+        <input
+          type="date"
+          value={form.invoiceDate}
+          onChange={e => setForm({ ...form, invoiceDate: e.target.value })}
+        />
+
+        <input
+          type="date"
+          value={form.dueDate}
+          onChange={e => setForm({ ...form, dueDate: e.target.value })}
+        />
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Invoice Amount"
+          value={form.invoiceAmount}
+          onChange={e =>
+            setForm({ ...form, invoiceAmount: e.target.value })
+          }
+        />
+
+        <button onClick={submitReceivable}>Add Receivable</button>
       </div>
 
-      {/* LIST */}
-      <div className="data-list">
-        <div className="data-list-header">
-          <span>Client</span>
-          <span>Amount</span>
-          <span>Status</span>
-          <span>Action</span>
+      {/* ================= RECEIVE PAYMENT FORM ================= */}
+      {paymentMode && selectedReceivable && (
+        <div className="card form-card">
+          <h3>Receive Payment</h3>
+
+          <p><strong>Client:</strong> {selectedReceivable.clientName}</p>
+          <p><strong>Invoice:</strong> {selectedReceivable.invoiceNo}</p>
+
+          <input
+            type="date"
+            value={paymentForm.paymentDate}
+            onChange={e =>
+              setPaymentForm({ ...paymentForm, paymentDate: e.target.value })
+            }
+          />
+
+          <input
+            type="number"
+            step="0.01"
+            value={paymentForm.amount}
+            onChange={e =>
+              setPaymentForm({ ...paymentForm, amount: e.target.value })
+            }
+          />
+
+          <button onClick={submitPayment}>Add to Cash</button>
+          <button
+            className="secondary"
+            onClick={() => {
+              setPaymentMode(false);
+              setSelectedReceivable(null);
+            }}
+          >
+            Cancel
+          </button>
         </div>
+      )}
 
-        {paged.map(r => (
-          <div className="data-row" key={r.id}>
-            <span>{r.client}</span>
-            <span>₹ {r.amount}</span>
-            <span className="badge-pill badge-blue">Pending</span>
-            <button onClick={() => remove(r.id)}>🗑</button>
-          </div>
-        ))}
+      {/* ================= EXPORT ================= */}
+      <div className="card">
+        <button onClick={() => exportToExcel(filtered, "Receivables")}>
+          Export to Excel
+        </button>
+      </div>
 
-        {paged.length === 0 && (
-          <div className="data-row">
-            <span>No receivables found</span>
-          </div>
-        )}
+      {/* ================= SEARCH ================= */}
+      <input
+        className="search"
+        placeholder="Search client..."
+        value={search}
+        onChange={e => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
+      />
+
+      {/* ================= TABLE ================= */}
+      <div className="card table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Client</th>
+              <th>Project</th>
+              <th>Invoice No</th>
+              <th>Invoice Date</th>
+              <th>Due Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length > 0 ? (
+              filtered.map((r, i) => (
+                <tr key={r.id}>
+                  <td>{r.id}</td>
+                  <td>{r.clientName}</td>
+                  <td>{r.projectId ?? "-"}</td>
+                  <td>{r.invoiceNo}</td>
+                  <td>{r.invoiceDate}</td>
+                  <td>{r.dueDate || "-"}</td>
+                  <td>₹ {r.invoiceAmount}</td>
+                  <td>{r.status}</td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        setSelectedReceivable(r);
+                        setPaymentForm({
+                          paymentDate: "",
+                          amount: r.invoiceAmount
+                        });
+                        setPaymentMode(true);
+                      }}
+                    >
+                      Receive Payment
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8">No data</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* PAGINATION */}
-      <Pagination
-        page={page}
-        total={filtered.length}
-        size={PAGE_SIZE}
-        setPage={setPage}
-      />
-    </div>
-  );
-}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <span className="page-info">
+            Page <strong>{page}</strong> of <strong>{totalPages}</strong>
+          </span>
 
-/* ✅ REQUIRED PAGINATION COMPONENT */
-function Pagination({ page, total, size, setPage }) {
-  const pages = Math.ceil(total / size);
-  if (pages <= 1) return null;
-
-  return (
-    <div style={{ marginTop: 16 }}>
-      {Array.from({ length: pages }).map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setPage(i + 1)}
-          className={page === i + 1 ? "active" : ""}
-        >
-          {i + 1}
-        </button>
-      ))}
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={`page-btn ${page === i + 1 ? "active" : ""}`}
+              onClick={() => {
+                setPage(i + 1);
+                loadReceivables(i + 1);
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
