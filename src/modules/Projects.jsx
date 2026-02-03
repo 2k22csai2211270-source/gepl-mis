@@ -130,58 +130,76 @@ export default function Projects() {
       {/* FORM */}
       <div className="card">
         <div className="form-row">
-          <input
-            placeholder="Project Name"
-            value={form.projectName}
-            onChange={e =>
-              setForm({ ...form, projectName: e.target.value })
-            }
-          />
-          <input
-            placeholder="Project Code"
-            value={form.projectCode}
-            onChange={e =>
-              setForm({ ...form, projectCode: e.target.value })
-            }
-          />
-          <input
-            placeholder="Client Name"
-            value={form.clientName}
-            onChange={e =>
-              setForm({ ...form, clientName: e.target.value })
-            }
-          />
-          <input
-            type="date"
-            value={form.plannedStartDate}
-            onChange={e =>
-              setForm({
-                ...form,
-                plannedStartDate: e.target.value
-              })
-            }
-          />
-          <input
-            type="date"
-            value={form.plannedEndDate}
-            onChange={e =>
-              setForm({
-                ...form,
-                plannedEndDate: e.target.value
-              })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Planned Budget"
-            value={form.plannedBudget}
-            onChange={e =>
-              setForm({
-                ...form,
-                plannedBudget: e.target.value
-              })
-            }
-          />
+          <div className="date-field">
+            <label>Project Name</label>
+            <input
+              placeholder="Name"
+              value={form.projectName}
+              onChange={e =>
+                setForm({ ...form, projectName: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Project Code</label>
+            <input
+              placeholder="0"
+              value={form.projectCode}
+              onChange={e =>
+                setForm({ ...form, projectCode: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Client Name</label>
+            <input
+              placeholder="Name"
+              value={form.clientName}
+              onChange={e =>
+                setForm({ ...form, clientName: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Planned Start Date</label>
+            <input
+              type="date"
+              value={form.plannedStartDate}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  plannedStartDate: e.target.value
+                })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Planned End Date</label>
+            <input
+              type="date"
+              value={form.plannedEndDate}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  plannedEndDate: e.target.value
+                })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Planned Budget</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={form.plannedBudget}
+              onChange={e =>
+                setForm({
+                  ...form,
+                  plannedBudget: e.target.value
+                })
+              }
+            />
+          </div>
 
           <button onClick={submitProject}>
             {editId ? "Update" : "Add"}

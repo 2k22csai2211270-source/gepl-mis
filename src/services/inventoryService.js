@@ -1,4 +1,4 @@
-const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
+
 
 function authHeaders() {
   const token = localStorage.getItem("token");

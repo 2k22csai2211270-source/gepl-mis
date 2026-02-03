@@ -1,4 +1,4 @@
-const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
+
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -42,6 +42,7 @@ export async function updateReceivable(id, data) {
   const res = await fetch(`${BASE_URL}/api/receivables/${id}/pay`, {
     method: "POST", // ✅ FIXED (was POST)
     headers: authHeaders(),
+    body: JSON.stringify(data) // status goes here
   });
 
   if (!res.ok) {

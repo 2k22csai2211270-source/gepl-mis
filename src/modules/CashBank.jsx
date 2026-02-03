@@ -125,77 +125,98 @@ export default function CashBank({ user }) {
       {/* ================= FORM ================= */}
       <div className="card">
         <div className="form-row">
-          <select
-            value={form.type}
-            onChange={e => setForm({ ...form, type: e.target.value })}
-          >
-            <option value="IN">IN</option>
-            <option value="OUT">OUT</option>
-          </select>
+          <div className="date-field">
+            <label>Type</label>
+            <select
+              value={form.type}
+              onChange={e => setForm({ ...form, type: e.target.value })}
+            >
+              <option value="IN">IN</option>
+              <option value="OUT">OUT</option>
+            </select>
+          </div>
 
-          <input
-            type="number"
-            placeholder="Amount"
-            value={form.amount}
-            onChange={e => setForm({ ...form, amount: e.target.value })}
-          />
+          <div className="date-field">
+            <label>Amount</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={form.amount}
+              onChange={e => setForm({ ...form, amount: e.target.value })}
+            />
+          </div>
 
-          <select
-            value={form.category}
-            onChange={e =>
-              setForm({ ...form, category: e.target.value })
-            }
-          >
-            <option>Advance</option>
-            <option>Expense</option>
-            <option>Payment</option>
-            <option>Refund</option>
-            <option>Receipt</option>
-            <option>Transfer</option>
-          </select>
+          <div className="date-field">
+            <label>Category</label>
+            <select
+              value={form.category}
+              onChange={e =>
+                setForm({ ...form, category: e.target.value })
+              }
+            >
+              <option>Advance</option>
+              <option>Expense</option>
+              <option>Payment</option>
+              <option>Refund</option>
+              <option>Receipt</option>
+              <option>Transfer</option>
+            </select>
+          </div>
 
-          <select
-            value={form.referenceType}
-            onChange={e =>
-              setForm({ ...form, referenceType: e.target.value })
-            }
-          >
-            <option>Manual</option>
-            <option>Receivables</option>
-            <option>Payables</option>
-          </select>
+          <div className="date-field">
+            <label>Reference Type</label>
+            <select
+              value={form.referenceType}
+              onChange={e =>
+                setForm({ ...form, referenceType: e.target.value })
+              }
+            >
+              <option>Manual</option>
+              <option>Receivables</option>
+              <option>Payables</option>
+            </select>
+          </div>
 
-          <input
-            placeholder="Reference ID"
-            value={form.referenceId}
-            onChange={e =>
-              setForm({ ...form, referenceId: e.target.value })
-            }
-          />
-
-          <input
-            placeholder="Project ID"
-            value={form.projectId}
-            onChange={e =>
-              setForm({ ...form, projectId: e.target.value })
-            }
-          />
-
-          <input
-            placeholder="Description"
-            value={form.description}
-            onChange={e =>
-              setForm({ ...form, description: e.target.value })
-            }
-          />
-
-          <input
-            type="date"
-            value={form.transactionDate}
-            onChange={e =>
-              setForm({ ...form, transactionDate: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Reference ID</label>
+            <input
+              placeholder="0"
+              value={form.referenceId}
+              onChange={e =>
+                setForm({ ...form, referenceId: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Project ID</label>
+            <input
+              placeholder="0"
+              value={form.projectId}
+              onChange={e =>
+                setForm({ ...form, projectId: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Description</label>
+            <input
+              value={form.description}
+              placeholder="XYZ..."
+              onChange={e =>
+                setForm({ ...form, description: e.target.value })
+              }
+            />
+          </div>
+          <div className="date-field">
+            <label>Transaction Date</label>
+            <input
+              type="date"
+              value={form.transactionDate}
+              onChange={e =>
+                setForm({ ...form, transactionDate: e.target.value })
+              }
+            />
+          </div>
 
           <button onClick={submit}>
             {editingIndex !== null ? "Update" : "Add"}

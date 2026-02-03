@@ -40,37 +40,3 @@
 .read-the-docs {
   color: #888;
 }
-/* ================= BRAND LOGO (SAFE ZONE) ================= */
-
-.logo-wrap {
-  margin-bottom: 26px;
-  padding: 16px;
-  border-radius: 16px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: var(--bg-card);
-  box-shadow: var(--shadow-card);
-
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
-
-.company-logo {
-  max-width: 160px;
-  height: auto;
-  object-fit: contain;
-
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
-}
-
-/* Light theme refinement */
-.light .logo-wrap {
-  background: #ffffff;
-}
-
-/* Dark theme refinement */
-:not(.light) .logo-wrap {
-  background: linear-gradient(180deg, #0f172a, #020617);
-}

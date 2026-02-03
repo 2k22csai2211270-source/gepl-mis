@@ -101,46 +101,61 @@ export default function Production() {
       {/* FORM */}
       <div className="card">
         <div className="form-row">
-          <input
-            placeholder="Project ID"
-            value={form.projectId}
-            onChange={e =>
-              setForm({ ...form, projectId: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Project ID</label>
+            <input
+              placeholder="0"
+              value={form.projectId}
+              onChange={e =>
+                setForm({ ...form, projectId: e.target.value })
+              }
+            />
+          </div>
 
-          <input
-            placeholder="Product Code"
-            value={form.productCode}
-            onChange={e =>
-              setForm({ ...form, productCode: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Product Code</label>
+            <input
+              placeholder="0"
+              value={form.productCode}
+              onChange={e =>
+                setForm({ ...form, productCode: e.target.value })
+              }
+            />
+          </div>
 
-          <input
-            placeholder="Product Name"
-            value={form.productName}
-            onChange={e =>
-              setForm({ ...form, productName: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Product Name</label>
+            <input
+              placeholder="Name"
+              value={form.productName}
+              onChange={e =>
+                setForm({ ...form, productName: e.target.value })
+              }
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="Planned Quantity"
-            value={form.plannedQuantity}
-            onChange={e =>
-              setForm({ ...form, plannedQuantity: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Planned Quantity</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={form.plannedQuantity}
+              onChange={e =>
+                setForm({ ...form, plannedQuantity: e.target.value })
+              }
+            />
+          </div>
 
-          <input
-            placeholder="Remarks"
+<div className="date-field">
+  <label>Remarks</label>
+            <input
+            placeholder="XYZ..."
             value={form.remarks}
             onChange={e =>
               setForm({ ...form, remarks: e.target.value })
             }
-          />
+            />
+            </div>
 
           <button onClick={submitProduction}>
             {editId ? "Update" : "Add"}

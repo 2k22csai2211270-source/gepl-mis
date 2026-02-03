@@ -153,46 +153,64 @@ export default function Payables() {
       <div className="card form-card">
         <h3>Add Vendor Invoice</h3>
 
-        <input
-          placeholder="Vendor Name"
-          value={form.vendorName}
-          onChange={e => setForm({ ...form, vendorName: e.target.value })}
-        />
+        <div className="date-field">
+          <label>Vendor Name</label>
+          <input
+            placeholder="Name"
+            value={form.vendorName}
+            onChange={e => setForm({ ...form, vendorName: e.target.value })}
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Project ID"
-          value={form.projectId}
-          onChange={e => setForm({ ...form, projectId: e.target.value })}
-        />
+        <div className="date-field">
+          <label>Project ID</label>
+          <input
+            type="number"
+            placeholder="0"
+            value={form.projectId}
+            onChange={e => setForm({ ...form, projectId: e.target.value })}
+          />
+        </div>
 
-        <input
-          placeholder="Invoice No"
-          value={form.invoiceNo}
-          onChange={e => setForm({ ...form, invoiceNo: e.target.value })}
-        />
+        <div className="date-field">
+          <label>Invoice No</label>
+          <input
+            placeholder="0"
+            value={form.invoiceNo}
+            onChange={e => setForm({ ...form, invoiceNo: e.target.value })}
+          />
+        </div>
 
-        <input
-          type="date"
-          value={form.invoiceDate}
-          onChange={e => setForm({ ...form, invoiceDate: e.target.value })}
-        />
+        <div className="date-field">
+          <label>Invoice Date</label>
+          <input
+            type="date"
+            value={form.invoiceDate}
+            onChange={e => setForm({ ...form, invoiceDate: e.target.value })}
+          />
+        </div>
 
-        <input
-          type="date"
-          value={form.dueDate}
-          onChange={e => setForm({ ...form, dueDate: e.target.value })}
-        />
+        <div className="date-field">
+          <label>Due Date</label>
+          <input
+            type="date"
+            value={form.dueDate}
+            onChange={e => setForm({ ...form, dueDate: e.target.value })}
+          />
+        </div>
 
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Invoice Amount"
-          value={form.invoiceAmount}
-          onChange={e =>
-            setForm({ ...form, invoiceAmount: e.target.value })
-          }
-        />
+        <div className="date-field">
+          <label>Invoice Amount</label>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="Invoice Amount"
+            value={form.invoiceAmount}
+            onChange={e =>
+              setForm({ ...form, invoiceAmount: e.target.value })
+            }
+          />
+        </div>
 
         <button onClick={submitPayable}>Add Payable</button>
       </div>

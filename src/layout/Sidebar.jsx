@@ -59,13 +59,9 @@ export default function Sidebar({
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
         <div className="brand">
-          <img
-            src="data:image/png;base64,"
-            alt="Geatpec Electronics"
-            className="brand-logo"
-          />
+          <h1>GEATPEC ELECTRONICS</h1>    
         </div>
-
+        
       </div>
       <nav className="sidebar-menu">
         {menus.length === 0 && (

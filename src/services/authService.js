@@ -1,5 +1,4 @@
-const BASE_URL =
-  "https://sparkling-radiance-production-a273.up.railway.app";
+
 
 /* ================= LOGIN ================= */
 export async function loginUser(credentials) {

@@ -92,32 +92,47 @@ export default function Inventory() {
 
       {/* ADD / EDIT FORM */}
       <div className="card form-row">
-        <input
-          placeholder="Item Name"
-          value={itemName}
-          onChange={e => setItemName(e.target.value)}
-        />
-        <input
-          placeholder="Item Code"
-          value={itemCode}
-          onChange={e => setItemCode(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={qty}
-          onChange={e => setQty(e.target.value)}
-        />
-        <input
-          placeholder="Unit"
-          value={unit}
-          onChange={e => setUnit(e.target.value)}
-        />
-        <input
-          placeholder="Location"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-        />
+        <div className="date-field">
+          <label>Item Name</label>
+          <input
+            placeholder="Name"
+            value={itemName}
+            onChange={e => setItemName(e.target.value)}
+          />
+        </div>
+        <div className="date-field">
+          <label>Item Code</label>
+          <input
+            placeholder="0"
+            value={itemCode}
+            onChange={e => setItemCode(e.target.value)}
+          />
+        </div>
+        <div className="date-field">
+          <label>Quantity</label>
+          <input
+            type="number"
+            placeholder="0"
+            value={qty}
+            onChange={e => setQty(e.target.value)}
+          />
+        </div>
+        <div className="date-field">
+          <label>Unit</label>
+          <input
+            placeholder="pcs/kg/box"
+            value={unit}
+            onChange={e => setUnit(e.target.value)}
+          />
+        </div>
+        <div className="date-field">
+          <label>Location</label>
+          <input
+            placeholder="Kanpur"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+          />
+        </div>
 
         <button onClick={submitItem}>
           {editId ? "Update" : "Add"}

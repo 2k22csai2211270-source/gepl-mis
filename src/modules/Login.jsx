@@ -38,7 +38,7 @@ export default function Login({ onLogin, onSignup }) {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>GEPL MIS Login</h2>
+        <h2>MIS Login</h2>
 
         <input
           placeholder="Username"
