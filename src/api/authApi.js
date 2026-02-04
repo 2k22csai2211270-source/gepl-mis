@@ -1,4 +1,4 @@
-const BASE_URL = "https://sparkling-radiance-production-a273.up.railway.app";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 /* LOGIN API */
 export async function loginApi(username, password) {
