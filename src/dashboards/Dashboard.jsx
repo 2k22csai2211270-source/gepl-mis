@@ -14,8 +14,17 @@ function decodeToken() {
   try {
     const token = localStorage.getItem("token");
     if (!token) return null;
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
+
+    const payload = token.split(".")[1];
+
+    // ✅ Convert Base64URL → Base64
+    const base64 = payload
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    return JSON.parse(atob(base64));
+  } catch (err) {
+    console.log("Token decode failed:", err);
     return null;
   }
 }
