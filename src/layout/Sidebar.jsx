@@ -12,11 +12,13 @@ export default function Sidebar({
   user,
   page,
   setPage,
-  collapsed,
-  setCollapsed
+  collapsed
 }) {
-  /* 🔒 ROLE SAFE GUARD */
-  const role = user?.role || "ACCOUNTS";
+  /* ✅ ROLE SAFE NORMALIZATION */
+  const role =
+    typeof user?.role === "object"
+      ? user.role.name
+      : user?.role || "ACCOUNTS";
 
   const menusByRole = {
     FOUNDER: [
@@ -27,42 +29,43 @@ export default function Sidebar({
       { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
       { id: "projects", label: "Projects", icon: <FaProjectDiagram /> },
-      { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
-
-      // { id: "vendor-scorecard", label: "Vendor Scorecard", icon: <FaChartPie /> }
-
+      { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> }
     ],
+
     ACCOUNTS: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "cash", label: "Cash & Bank", icon: <FaMoneyBillWave /> },
       { id: "receivables", label: "Receivables", icon: <FaClipboardList /> },
       { id: "payables", label: "Payables", icon: <FaClipboardList /> }
     ],
+
     PRODUCTION: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
       { id: "inventory", label: "Inventory", icon: <FaBoxes /> }
     ],
+
     PURCHASE: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
-      { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
-
-      // { id: "vendor-scorecard", label: "Vendor Scorecard", icon: <FaChartPie /> }
+      { id: "inventory", label: "Inventory", icon: <FaBoxes /> }
     ]
   };
 
-  /* 🔒 FINAL SAFETY */
+  /* ✅ SAFE MENU */
   const menus = menusByRole[role] || [];
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
         <div className="brand">
-          <h1>GEATPEC ELECTRONICS</h1>    
+          <h1>GEATPEC ELECTRONICS</h1>
+          <p style={{ fontSize: 12, color: "#94a3b8" }}>
+            Role: {role}
+          </p>
         </div>
-        
       </div>
+
       <nav className="sidebar-menu">
         {menus.length === 0 && (
           <p style={{ color: "#94a3b8", padding: 12 }}>
