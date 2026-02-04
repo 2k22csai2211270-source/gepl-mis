@@ -16,7 +16,10 @@ export default function Sidebar({
   setCollapsed
 }) {
   /* 🔒 ROLE SAFE GUARD */
-  const role = user?.role || "ACCOUNTS";
+  const role =
+  typeof user?.role === "object"
+    ? user.role.name
+    : user?.role || "ACCOUNTS";
 
   const menusByRole = {
     FOUNDER: [

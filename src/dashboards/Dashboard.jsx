@@ -31,16 +31,16 @@ ChartJS.register(
   Legend
 );
 
-/* ================= JWT USER ================= */
-function decodeToken() {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
-}
+// /* ================= JWT USER ================= */
+// function decodeToken() {
+//   try {
+//     const token = localStorage.getItem("token");
+//     if (!token) return null;
+//     return JSON.parse(atob(token.split(".")[1]));
+//   } catch {
+//     return null;
+//   }
+// }
 
 /* ================= FORMATTER ================= */
 const money = n =>
@@ -48,7 +48,7 @@ const money = n =>
     minimumFractionDigits: 2
   });
 
-export default function Dashboard({ onLogout, cashData }) {
+export default function Dashboard({ user, onLogout, cashData })  {
 
   /* ================= USER ================= */
   const [loggedUser, setLoggedUser] = useState(null);
@@ -307,7 +307,8 @@ export default function Dashboard({ onLogout, cashData }) {
         <div>
           <h1>Executive Dashboard</h1>
           <p>
-            Welcome Back, <b>{loggedUser?.username || loggedUser?.sub}</b>
+            Welcome Back, <b>{user.username}</b>
+
           </p>
         </div>
 
@@ -359,7 +360,8 @@ export default function Dashboard({ onLogout, cashData }) {
           <div className="modal-card">
             <h3>User Profile</h3>
             <p><b>Name:</b> {loggedUser.username || loggedUser.sub}</p>
-            <p><b>Role:</b> {loggedUser.role}</p>
+            <p><b>Role:</b> {loggedUser.role?.name}</p>
+
             <button onClick={() => setShowProfile(false)}>Close</button>
           </div>
         </div>
