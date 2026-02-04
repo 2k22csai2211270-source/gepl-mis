@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { exportToExcel } from "../utils/exportExcel";
-import { Line } from "react-chartjs-2";
+
 import {
   getPayables,
   addPayable
 } from "../services/payablesService";
+
 import { addCashTransaction } from "../services/cashBankService";
 
 const PAGE_SIZE = 5;
@@ -101,7 +102,6 @@ export default function Payables() {
 
     try {
       await addCashTransaction(payload);
-
       alert("Payment added to Cash");
 
       setPaymentMode(false);
@@ -129,34 +129,18 @@ export default function Payables() {
     p.vendorName?.toLowerCase().includes(search.toLowerCase())
   );
 
-  /* ================= CHART ================= */
-  const chartData = {
-    labels: data.map(p => p.dueDate),
-    datasets: [
-      {
-        label: "Payables Amount",
-        data: data.map(p => p.invoiceAmount),
-        borderColor: "#ef4444",
-        backgroundColor: "rgba(239,68,68,0.25)",
-        tension: 0.4,
-        fill: true
-      }
-    ]
-  };
-
   /* ================= UI ================= */
   return (
     <div className="module">
       <h2>Payables</h2>
 
-      {/* ================= ADD PAYABLE ================= */}
+      {/* ADD PAYABLE */}
       <div className="card form-card">
         <h3>Add Vendor Invoice</h3>
 
         <div className="date-field">
           <label>Vendor Name</label>
           <input
-            placeholder="Name"
             value={form.vendorName}
             onChange={e => setForm({ ...form, vendorName: e.target.value })}
           />
@@ -166,7 +150,6 @@ export default function Payables() {
           <label>Project ID</label>
           <input
             type="number"
-            placeholder="0"
             value={form.projectId}
             onChange={e => setForm({ ...form, projectId: e.target.value })}
           />
@@ -175,7 +158,6 @@ export default function Payables() {
         <div className="date-field">
           <label>Invoice No</label>
           <input
-            placeholder="0"
             value={form.invoiceNo}
             onChange={e => setForm({ ...form, invoiceNo: e.target.value })}
           />
@@ -204,7 +186,6 @@ export default function Payables() {
           <input
             type="number"
             step="0.01"
-            placeholder="Invoice Amount"
             value={form.invoiceAmount}
             onChange={e =>
               setForm({ ...form, invoiceAmount: e.target.value })
@@ -215,7 +196,7 @@ export default function Payables() {
         <button onClick={submitPayable}>Add Payable</button>
       </div>
 
-      {/* ================= MAKE PAYMENT FORM ================= */}
+      {/* MAKE PAYMENT */}
       {paymentMode && selectedPayable && (
         <div className="card form-card">
           <h3>Make Payment</h3>
@@ -253,14 +234,14 @@ export default function Payables() {
         </div>
       )}
 
-      {/* ================= EXPORT ================= */}
+      {/* EXPORT */}
       <div className="card">
         <button onClick={() => exportToExcel(filtered, "Payables")}>
           Export to Excel
         </button>
       </div>
 
-      {/* ================= SEARCH ================= */}
+      {/* SEARCH */}
       <input
         className="search"
         placeholder="Search vendor..."
@@ -271,15 +252,7 @@ export default function Payables() {
         }}
       />
 
-      {/* ================= CHART ================= */}
-      {data.length > 0 && (
-        <div className="card">
-          <h3>Payables Trend</h3>
-          <Line data={chartData} />
-        </div>
-      )}
-
-      {/* ================= TABLE ================= */}
+      {/* TABLE */}
       <div className="card table-card">
         <table>
           <thead>
@@ -295,6 +268,7 @@ export default function Payables() {
               <th>Action</th>
             </tr>
           </thead>
+
           <tbody>
             {filtered.length > 0 ? (
               filtered.map(p => (
@@ -325,7 +299,7 @@ export default function Payables() {
               ))
             ) : (
               <tr>
-                <td colSpan="8">No data</td>
+                <td colSpan="9">No data</td>
               </tr>
             )}
           </tbody>
