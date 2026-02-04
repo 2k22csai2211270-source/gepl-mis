@@ -23,11 +23,10 @@ export default function Login({ onLogin, onSignup }) {
       localStorage.setItem("token", data.token);
 
       onLogin({
-  username: data.username,
-  role: typeof data.role === "object" ? data.role.name : data.role,
-  token: data.token
-});
-
+        userName: data.username,
+        role: data.role,
+        token: data.token
+      });
 
     } catch (err) {
       setError(err.message || "Login failed");
