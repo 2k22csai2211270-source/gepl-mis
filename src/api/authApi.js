@@ -1,5 +1,4 @@
-const BASE_URL = "https://cabinet-ago-marion-inn.trycloudflare.com"
-
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 /* LOGIN API */
 export async function loginApi(username, password) {
   const res = await fetch(`${BASE_URL}/api/auth/login`, {
