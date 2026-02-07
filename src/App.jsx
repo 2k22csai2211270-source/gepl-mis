@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /* AUTH */
 import Login from "./modules/Login";
@@ -14,17 +14,42 @@ import Receivables from "./modules/Receivables";
 import Payables from "./modules/Payables";
 import Inventory from "./modules/Inventory";
 import Production from "./modules/Production";
+import QC from "./modules/QC";
 import Procurement from "./modules/Procurement";
 import Projects from "./modules/Projects";
 import VendorScorecard from "./modules/VendorScorecard";
+
+/* ================= TOKEN DECODER ================= */
+function decodeToken() {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return null;
+  }
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
   const [page, setPage] = useState("dashboard");
 
+  /* ================= RESTORE LOGIN ON REFRESH ================= */
+  useEffect(() => {
+    const decoded = decodeToken();
+    if (decoded) {
+      setUser({
+        username: decoded.username || decoded.sub,
+        role: decoded.role,
+        token: localStorage.getItem("token")
+      });
+    }
+  }, []);
+
   /* ================= LOGOUT ================= */
   function logout() {
+    localStorage.removeItem("token");
     setUser(null);
     setPage("dashboard");
   }
@@ -51,42 +76,32 @@ export default function App() {
     case "cash":
       content = <CashBank user={user} />;
       break;
-
     case "receivables":
       content = <Receivables />;
       break;
-
     case "payables":
       content = <Payables />;
       break;
-
     case "inventory":
       content = <Inventory />;
       break;
-
     case "production":
       content = <Production />;
       break;
-
+    case "qc":
+      content = <QC />;
+      break;
     case "procurement":
       content = <Procurement />;
       break;
-
     case "projects":
       content = <Projects />;
       break;
-
     case "vendor-scorecard":
       content = <VendorScorecard />;
       break;
-
     default:
-      content = (
-        <Dashboard
-          user={user}
-          onLogout={logout}
-        />
-      );
+      content = <Dashboard user={user} onLogout={logout} />;
   }
 
   /* ================= LAYOUT ================= */

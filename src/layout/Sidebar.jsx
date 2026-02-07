@@ -5,7 +5,8 @@ import {
   FaBoxes,
   FaIndustry,
   FaProjectDiagram,
-  FaShoppingCart
+  FaShoppingCart,
+  FaCheckCircle   // ✅ QC icon
 } from "react-icons/fa";
 
 export default function Sidebar({
@@ -26,29 +27,34 @@ export default function Sidebar({
       { id: "payables", label: "Payables", icon: <FaClipboardList /> },
       { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
+
+      // ✅ NEW QC MODULE
+      { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> },
+
       { id: "projects", label: "Projects", icon: <FaProjectDiagram /> },
-      { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
-
-      // { id: "vendor-scorecard", label: "Vendor Scorecard", icon: <FaChartPie /> }
-
+      { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> }
     ],
+
     ACCOUNTS: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "cash", label: "Cash & Bank", icon: <FaMoneyBillWave /> },
       { id: "receivables", label: "Receivables", icon: <FaClipboardList /> },
       { id: "payables", label: "Payables", icon: <FaClipboardList /> }
     ],
+
     PRODUCTION: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
-      { id: "inventory", label: "Inventory", icon: <FaBoxes /> }
+      { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
+
+      // ✅ NEW QC MODULE
+      { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> }
     ],
+
     PURCHASE: [
       { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
-      { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
-
-      // { id: "vendor-scorecard", label: "Vendor Scorecard", icon: <FaChartPie /> }
+      { id: "inventory", label: "Inventory", icon: <FaBoxes /> }
     ]
   };
 
@@ -59,10 +65,10 @@ export default function Sidebar({
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
         <div className="brand">
-          <h1>GEATPEC ELECTRONICS</h1>    
+          <h1>GEATPEC ELECTRONICS</h1>
         </div>
-        
       </div>
+
       <nav className="sidebar-menu">
         {menus.length === 0 && (
           <p style={{ color: "#94a3b8", padding: 12 }}>

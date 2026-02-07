@@ -1288,28 +1288,76 @@ body.project-open {
   /* subtle gray */
 }
 
-.password-wrapper {
-  position: relative;
-  width: 100%;
+/* Password eye icon animation */
+.eye-icon {
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.password-wrapper input {
-  width: 100%;
-  padding-right: 42px;
+.eye-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
 }
 
-.toggle-password {
-  position: absolute;
-  left: 125px;
-  top: 20%;
-  transform: translateY(-50%);
-  background: none;
+/* Dark mode adaptive color */
+@media (prefers-color-scheme: dark) {
+  .eye-icon svg {
+    stroke: rgb(58, 56, 56);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .eye-icon svg {
+    stroke: black;
+  }
+}
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 12px;
+  border-bottom: 1px solid #3d434f;
+}
+
+.styled-table th {
+  text-align: left;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.create { background: #dcfce7; color: #166534; }
+.badge.update { background: #dbeafe; color: #1e40af; }
+.badge.delete { background: #fee2e2; color: #991b1b; }
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.btn-finish {
+  padding: 6px 14px;
+  border-radius: 8px;
   border: none;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 18px;
-  color: #1b5ab2;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
 }
 
-.toggle-password:hover {
-  color: #0ea5e9;
+.btn-finish:hover {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.btn-finish:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }

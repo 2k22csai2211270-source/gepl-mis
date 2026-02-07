@@ -6,6 +6,15 @@ import {
 } from "../services/productionService";
 
 const PAGE_SIZE = 5;
+const BASE_URL = "http://192.168.29.68:8080";
+
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : ""
+  };
+}
 
 export default function Production() {
   const [production, setProduction] = useState([]);
@@ -13,6 +22,19 @@ export default function Production() {
   const [totalPages, setTotalPages] = useState(1);
   const [editId, setEditId] = useState(null);
 
+  const [showConsume, setShowConsume] = useState(false);
+  const [showProduce, setShowProduce] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const [consumeForm, setConsumeForm] = useState({
+    inventoryId: "",
+    quantity: "",
+    remark: ""
+  });
+
+  const [produceQty, setProduceQty] = useState("");
+
+  /* ================= FORM ================= */
   const [form, setForm] = useState({
     projectId: "",
     productCode: "",
@@ -27,16 +49,9 @@ export default function Production() {
   }, []);
 
   async function loadProduction(p = page) {
-    try {
-      const res = await getProduction(p - 1, PAGE_SIZE);
-      const list = Array.isArray(res?.content) ? res.content : [];
-
-      setProduction(list);
-      setTotalPages(res.totalPages || 1);
-    } catch (err) {
-      console.error("Load failed", err);
-      setProduction([]);
-    }
+    const res = await getProduction(p - 1, PAGE_SIZE);
+    setProduction(res.content || []);
+    setTotalPages(res.totalPages || 1);
   }
 
   /* ================= ADD / UPDATE ================= */
@@ -46,33 +61,26 @@ export default function Production() {
       !form.productCode ||
       !form.productName ||
       !form.plannedQuantity
-    )
-      return;
+    ) return;
 
     const payload = {
       ...form,
       plannedQuantity: Number(form.plannedQuantity)
     };
 
-    try {
-      if (editId) {
-        await updateProduction(editId, payload);
-      } else {
-        await addProductionApi(payload);
-      }
-
-      resetForm();
-      setEditId(null);
-      loadProduction();
-    } catch (err) {
-      console.error("Save failed", err);
-      alert("Save failed");
+    if (editId) {
+      await updateProduction(editId, payload);
+    } else {
+      await addProductionApi(payload);
     }
+
+    resetForm();
+    setEditId(null);
+    loadProduction();
   }
 
   function editRow(index) {
     const p = production[index];
-
     setForm({
       projectId: p.projectId || "",
       productCode: p.productCode || "",
@@ -80,7 +88,6 @@ export default function Production() {
       plannedQuantity: p.plannedQuantity || "",
       remarks: p.remarks || ""
     });
-
     setEditId(p.id);
   }
 
@@ -94,43 +101,74 @@ export default function Production() {
     });
   }
 
+  /* ================= START ================= */
+  async function startProduction(id) {
+    await fetch(`${BASE_URL}/api/production/${id}/start`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    loadProduction();
+  }
+
+  /* ================= CONSUME ================= */
+  async function submitConsume() {
+    await fetch(`${BASE_URL}/api/production/${selectedId}/consume`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        inventoryId: Number(consumeForm.inventoryId),
+        quantity: Number(consumeForm.quantity),
+        remark: consumeForm.remark
+      })
+    });
+
+    setShowConsume(false);
+    setConsumeForm({ inventoryId: "", quantity: "", remark: "" });
+  }
+
+  /* ================= PRODUCE ================= */
+  async function submitProduce() {
+    await fetch(`${BASE_URL}/api/production/${selectedId}/produce`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        producedQuantity: Number(produceQty)
+      })
+    });
+
+    setShowProduce(false);
+    setProduceQty("");
+    loadProduction();
+  }
+
   return (
     <div className="page">
       <h2>Production</h2>
 
-      {/* FORM */}
+      {/* ================= FORM ================= */}
       <div className="card">
         <div className="form-row">
           <div className="date-field">
             <label>Project ID</label>
             <input
-              placeholder="0"
               value={form.projectId}
-              onChange={e =>
-                setForm({ ...form, projectId: e.target.value })
-              }
+              onChange={e => setForm({ ...form, projectId: e.target.value })}
             />
           </div>
 
           <div className="date-field">
             <label>Product Code</label>
             <input
-              placeholder="0"
               value={form.productCode}
-              onChange={e =>
-                setForm({ ...form, productCode: e.target.value })
-              }
+              onChange={e => setForm({ ...form, productCode: e.target.value })}
             />
           </div>
 
           <div className="date-field">
             <label>Product Name</label>
             <input
-              placeholder="Name"
               value={form.productName}
-              onChange={e =>
-                setForm({ ...form, productName: e.target.value })
-              }
+              onChange={e => setForm({ ...form, productName: e.target.value })}
             />
           </div>
 
@@ -138,7 +176,6 @@ export default function Production() {
             <label>Planned Quantity</label>
             <input
               type="number"
-              placeholder="0"
               value={form.plannedQuantity}
               onChange={e =>
                 setForm({ ...form, plannedQuantity: e.target.value })
@@ -146,38 +183,31 @@ export default function Production() {
             />
           </div>
 
-<div className="date-field">
-  <label>Remarks</label>
+          <div className="date-field">
+            <label>Remarks</label>
             <input
-            placeholder="XYZ..."
-            value={form.remarks}
-            onChange={e =>
-              setForm({ ...form, remarks: e.target.value })
-            }
+              value={form.remarks}
+              onChange={e => setForm({ ...form, remarks: e.target.value })}
             />
-            </div>
+          </div>
 
-          <button onClick={submitProduction}>
-            {editId ? "Update" : "Add"}
+          <button onClick={submitProduction}>Add
           </button>
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* ================= TABLE ================= */}
       <div className="card">
         <table className="table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Project ID</th>
+              <th>Project</th>
               <th>Product Code</th>
               <th>Product Name</th>
-              <th>Planned qty</th>
-              <th>Produced qty</th>
+              <th>Planned Qty</th>
+              <th>Produced Qty</th>
               <th>Status</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Remarks</th>
               <th>Created By</th>
               <th>Created At</th>
               <th>Updated At</th>
@@ -194,16 +224,7 @@ export default function Production() {
                 <td>{p.productName}</td>
                 <td>{p.plannedQuantity}</td>
                 <td>{p.producedQuantity || "-"}</td>
-
-                <td>
-                  <div className="delay-bar">
-                    {p.status?.replaceAll("_", " ") || "-"}
-                  </div>
-                </td>
-
-                <td>{p.startDate || "-"}</td>
-                <td>{p.endDate || "-"}</td>
-                <td>{p.remarks || "-"}</td>
+                <td>{p.status}</td>
                 <td>{p.createdBy || "-"}</td>
                 <td>
                   {p.createdAt
@@ -215,39 +236,92 @@ export default function Production() {
                     ? new Date(p.updatedAt).toLocaleString()
                     : "-"}
                 </td>
-
                 <td>
-                  <button onClick={() => editRow(i)}>
-                    Edit
-                  </button>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => startProduction(p.id)}>Start</button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedId(p.id);
+                        setShowConsume(true);
+                      }}
+                    >
+                      Consume
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedId(p.id);
+                        setShowProduce(true);
+                      }}
+                    >
+                      Produce
+                    </button>
+
+                  </div>
                 </td>
               </tr>
             ))}
-
-            {production.length === 0 && (
-              <tr>
-                <td colSpan="14">No production data</td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i + 1 ? "active" : ""}
-              onClick={() => {
-                setPage(i + 1);
-                loadProduction(i + 1);
-              }}
-            >
-              {i + 1}
+      {/* ================= CONSUME MODAL ================= */}
+      {showConsume && (
+        <div className="modal">
+          <div className="modal-card">
+            <h3>Consume Inventory</h3>
+
+            <input
+              placeholder="Inventory ID"
+              value={consumeForm.inventoryId}
+              onChange={e =>
+                setConsumeForm({ ...consumeForm, inventoryId: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Quantity"
+              value={consumeForm.quantity}
+              onChange={e =>
+                setConsumeForm({ ...consumeForm, quantity: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Remark"
+              value={consumeForm.remark}
+              onChange={e =>
+                setConsumeForm({ ...consumeForm, remark: e.target.value })
+              }
+            />
+
+            <button onClick={submitConsume}>Submit</button>
+            <button className="secondary" onClick={() => setShowConsume(false)}>
+              Cancel
             </button>
-          ))}
+          </div>
+        </div>
+      )}
+
+      {/* ================= PRODUCE MODAL ================= */}
+      {showProduce && (
+        <div className="modal">
+          <div className="modal-card">
+            <h3>Produce Quantity</h3>
+
+            <input
+              type="number"
+              placeholder="Produced Quantity"
+              value={produceQty}
+              onChange={e => setProduceQty(e.target.value)}
+            />
+
+            <button onClick={submitProduce}>Submit</button>
+            <button className="secondary" onClick={() => setShowProduce(false)}>
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

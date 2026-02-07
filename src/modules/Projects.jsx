@@ -235,7 +235,6 @@ export default function Projects() {
                   <td>{p.projectCode}</td>
                   <td>{p.projectName}</td>
                   <td>{p.clientName || "-"}</td>
-                  <td>{p.plannedStartDate}</td>
                   <td>{p.plannedEndDate}</td>
                   <td>₹ {p.plannedBudget || 0}</td>
                   <td>
