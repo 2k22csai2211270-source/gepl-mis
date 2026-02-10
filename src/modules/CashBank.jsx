@@ -232,14 +232,15 @@ export default function CashBank({ user }) {
               <th>Txn ID</th>
               <th>Type</th>
               <th>Amount</th>
-              <th>Date</th>
+              <th>Txn Date</th>
               <th>Category</th>
               <th>Ref Type</th>
               <th>Ref ID</th>
-              <th>Project</th>
+              <th>Project ID</th>
               <th>Created By</th>
               <th>Created At</th>
               <th>Updated At</th>
+              <th>Description</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -259,6 +260,7 @@ export default function CashBank({ user }) {
                   <td>{c.createdBy}</td>
                   <td>{new Date(c.createdAt).toLocaleString()}</td>
                   <td>{new Date(c.updatedAt).toLocaleString()}</td>
+                  <td>{c.description}</td>
                   <td>
                     <button onClick={() => editRow(i)}>Edit</button>
                   </td>

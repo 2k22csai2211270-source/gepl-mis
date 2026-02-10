@@ -8,7 +8,7 @@ function authHeaders() {
 }
 
 /* ============== GET (PAGEABLE) ============== */
-export async function getReceivables(page = 0, size = 10) {
+export async function getReceivables(page = 0, size = 5) {
   const res = await fetch(
     `${BASE_URL}/api/receivables?page=${page}&size=${size}`,
     { headers: authHeaders() }
@@ -51,14 +51,3 @@ export async function updateReceivable(id, data) {
   return res.json(); // updated entity with status
 }
 
-/* ============== DELETE ============== */
-export async function deleteReceivable(id) {
-  const res = await fetch(`${BASE_URL}/api/receivables/${id}`, {
-    method: "DELETE",
-    headers: authHeaders()
-  });
-
-  if (!res.ok) {
-    throw new Error("Delete failed");
-  }
-}

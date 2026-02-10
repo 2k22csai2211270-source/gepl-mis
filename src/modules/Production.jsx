@@ -5,7 +5,7 @@ import {
   updateProduction
 } from "../services/productionService";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 const BASE_URL = "http://192.168.29.68:8080";
 
 function authHeaders() {
@@ -45,8 +45,8 @@ export default function Production() {
 
   /* ================= LOAD ================= */
   useEffect(() => {
-    loadProduction();
-  }, []);
+    loadProduction(page);
+  }, [page]);
 
   async function loadProduction(p = page) {
     const res = await getProduction(p - 1, PAGE_SIZE);
@@ -152,6 +152,7 @@ export default function Production() {
             <label>Project ID</label>
             <input
               value={form.projectId}
+              placeholder="0"
               onChange={e => setForm({ ...form, projectId: e.target.value })}
             />
           </div>
@@ -160,6 +161,7 @@ export default function Production() {
             <label>Product Code</label>
             <input
               value={form.productCode}
+              placeholder="123..."
               onChange={e => setForm({ ...form, productCode: e.target.value })}
             />
           </div>
@@ -168,6 +170,7 @@ export default function Production() {
             <label>Product Name</label>
             <input
               value={form.productName}
+              placeholder="Name.."
               onChange={e => setForm({ ...form, productName: e.target.value })}
             />
           </div>
@@ -176,6 +179,7 @@ export default function Production() {
             <label>Planned Quantity</label>
             <input
               type="number"
+              placeholder="0"
               value={form.plannedQuantity}
               onChange={e =>
                 setForm({ ...form, plannedQuantity: e.target.value })
@@ -187,6 +191,7 @@ export default function Production() {
             <label>Remarks</label>
             <input
               value={form.remarks}
+              placeholder="XYZ..."
               onChange={e => setForm({ ...form, remarks: e.target.value })}
             />
           </div>
@@ -265,6 +270,31 @@ export default function Production() {
           </tbody>
         </table>
       </div>
+      {/* ================= PAGINATION ================= */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={page === i + 1 ? "active" : ""}
+              onClick={() => setPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* ================= CONSUME MODAL ================= */}
       {showConsume && (

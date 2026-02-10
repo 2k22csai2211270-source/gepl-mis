@@ -6,7 +6,7 @@ import {
   finishQC
 } from "../services/qcService";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export default function QC() {
   const { productionOrderId } = useParams();
@@ -34,11 +34,7 @@ export default function QC() {
 
   async function loadQC() {
     try {
-      const res = await getQCRecords(
-        productionOrderId,
-        page - 1,
-        PAGE_SIZE
-      );
+      const res = await getQCRecords(page - 1, PAGE_SIZE); // backend is 0-based
       setData(res.content || []);
       setTotalPages(res.totalPages || 1);
     } catch (err) {
@@ -111,6 +107,7 @@ export default function QC() {
           <input
             type="number"
             value={form.productionOrderId}
+            placeholder="0"
             onChange={e =>
               setForm({ ...form, productionOrderId: e.target.value })
             }
@@ -121,6 +118,7 @@ export default function QC() {
           <label>Project ID</label>
           <input
             value={form.projectId}
+            placeholder="0"
             onChange={e =>
               setForm({ ...form, projectId: e.target.value })
             }
@@ -132,6 +130,7 @@ export default function QC() {
           <input
             type="number"
             value={form.inspectedQty}
+            placeholder="0"
             onChange={e =>
               setForm({ ...form, inspectedQty: e.target.value })
             }
@@ -143,6 +142,7 @@ export default function QC() {
           <input
             type="number"
             value={form.acceptedQty}
+            placeholder="0"
             onChange={e =>
               setForm({ ...form, acceptedQty: e.target.value })
             }
@@ -153,6 +153,7 @@ export default function QC() {
           <label>Rework Qty</label>
           <input
             type="number"
+            placeholder="0"
             value={form.reworkQty}
             onChange={e =>
               setForm({ ...form, reworkQty: e.target.value })
@@ -165,6 +166,7 @@ export default function QC() {
           <input
             type="number"
             value={form.scrapQty}
+            placeholder="0"
             onChange={e =>
               setForm({ ...form, scrapQty: e.target.value })
             }
@@ -175,6 +177,7 @@ export default function QC() {
           <label>Remarks</label>
           <input
             value={form.remarks}
+            placeholder="XYZ.."
             onChange={e =>
               setForm({ ...form, remarks: e.target.value })
             }
@@ -217,37 +220,14 @@ export default function QC() {
                   <td>{qc.acceptedQty}</td>
                   <td>{qc.reworkQty}</td>
                   <td>{qc.scrapQty}</td>
-
-                  <td>
-                    <span
-                      style={{
-                        color:
-                          qc.status === "FAILED"
-                            ? "red"
-                            : qc.status === "REWORK"
-                            ? "orange"
-                            : qc.status === "FINISHED"
-                            ? "gray"
-                            : "limegreen",
-                        fontWeight: "bold"
-                      }}
-                    >
-                      {qc.status}
-                    </span>
-                  </td>
-
+                  <td>{qc.status}</td>
                   <td>{qc.remarks || "-"}</td>
-
-                  {/* ===== ACTION ===== */}
                   <td>
                     <button
-                      className="btn-finish"
                       disabled={qc.status === "FINISHED"}
                       onClick={() => handleFinishQC(qc.id)}
                     >
-                      {qc.status === "FINISHED"
-                        ? "Finished"
-                        : "Finish"}
+                      {qc.status === "FINISHED" ? "Finished" : "Finish"}
                     </button>
                   </td>
                 </tr>
@@ -264,17 +244,19 @@ export default function QC() {
       {/* ================= PAGINATION ================= */}
       {totalPages > 1 && (
         <div className="pagination">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
             Prev
           </button>
 
-          <span>
-            Page <strong>{page}</strong> of{" "}
-            <strong>{totalPages}</strong>
-          </span>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={page === i + 1 ? "active" : ""}
+              onClick={() => setPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
 
           <button
             disabled={page === totalPages}

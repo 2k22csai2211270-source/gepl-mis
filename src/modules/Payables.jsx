@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { exportToExcel } from "../utils/exportExcel";
-
 import {
   getPayables,
-  addPayable
+  addPayable,
+  updatePayable
 } from "../services/payablesService";
 
 import { addCashTransaction } from "../services/cashBankService";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 1;
 
 export default function Payables() {
   const [data, setData] = useState([]);
@@ -36,8 +35,8 @@ export default function Payables() {
 
   /* ================= LOAD ================= */
   useEffect(() => {
-    loadPayables();
-  }, []);
+    loadPayables(page);
+  }, [page]);
 
   async function loadPayables(p = page) {
     try {
@@ -75,7 +74,7 @@ export default function Payables() {
     try {
       await addPayable(payload);
       resetPayableForm();
-      loadPayables();
+      loadPayables(page);
     } catch (err) {
       console.error("Save failed", err);
       alert("Save failed");
@@ -89,29 +88,48 @@ export default function Payables() {
       return;
     }
 
-    const payload = {
-      type: "OUT",
-      amount: Number(paymentForm.amount),
-      category: "Payment",
-      referenceType: "Payables",
-      referenceId: selectedPayable.id,
-      projectId: selectedPayable.projectId,
-      description: `Payment made to ${selectedPayable.vendorName} (Invoice ${selectedPayable.invoiceNo})`,
-      txnDate: paymentForm.paymentDate
-    };
+    const currentPayment = Number(paymentForm.amount);
 
+    // ✅ IMPORTANT: cumulative paid amount
+    const totalPaid =
+      Number(selectedPayable.paidAmount || 0) + currentPayment;
+
+    /* 1️⃣ CASH OUT */
     try {
-      await addCashTransaction(payload);
-      alert("Payment added to Cash");
-
-      setPaymentMode(false);
-      setSelectedPayable(null);
-      setPaymentForm({ paymentDate: "", amount: "" });
+      await addCashTransaction({
+        type: "OUT",
+        amount: currentPayment,
+        category: "Payment",
+        referenceType: "Payables",
+        referenceId: selectedPayable.id,
+        projectId: selectedPayable.projectId,
+        description: `Payment made to ${selectedPayable.vendorName} (Invoice ${selectedPayable.invoiceNo})`,
+        txnDate: paymentForm.paymentDate
+      });
     } catch (err) {
-      console.error("Payment failed", err);
-      alert("Payment failed");
+      console.error("Cash deduction failed", err);
+      alert("Cash deduction failed");
+      return;
     }
+
+    /* 2️⃣ UPDATE PAYABLE (CUMULATIVE) */
+    try {
+      await updatePayable(selectedPayable.id, {
+        amount: totalPaid,                // ✅ FIX
+        paymentDate: paymentForm.paymentDate
+      });
+    } catch (err) {
+      console.error("Payable update failed", err);
+      alert("Cash deducted, but Payable update failed");
+    }
+
+    /* CLEANUP */
+    setPaymentMode(false);
+    setSelectedPayable(null);
+    setPaymentForm({ paymentDate: "", amount: "" });
+    loadPayables(page);
   }
+
 
   function resetPayableForm() {
     setForm({
@@ -142,6 +160,7 @@ export default function Payables() {
           <label>Vendor Name</label>
           <input
             value={form.vendorName}
+            placeholder="Name.."
             onChange={e => setForm({ ...form, vendorName: e.target.value })}
           />
         </div>
@@ -151,6 +170,7 @@ export default function Payables() {
           <input
             type="number"
             value={form.projectId}
+            placeholder="0"
             onChange={e => setForm({ ...form, projectId: e.target.value })}
           />
         </div>
@@ -159,6 +179,7 @@ export default function Payables() {
           <label>Invoice No</label>
           <input
             value={form.invoiceNo}
+            placeholder="0"
             onChange={e => setForm({ ...form, invoiceNo: e.target.value })}
           />
         </div>
@@ -186,6 +207,7 @@ export default function Payables() {
           <input
             type="number"
             step="0.01"
+            placeholder="0"
             value={form.invoiceAmount}
             onChange={e =>
               setForm({ ...form, invoiceAmount: e.target.value })
@@ -204,22 +226,28 @@ export default function Payables() {
           <p><strong>Vendor:</strong> {selectedPayable.vendorName}</p>
           <p><strong>Invoice:</strong> {selectedPayable.invoiceNo}</p>
 
-          <input
-            type="date"
-            value={paymentForm.paymentDate}
-            onChange={e =>
-              setPaymentForm({ ...paymentForm, paymentDate: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Payment Date</label>
+            <input
+              type="date"
+              value={paymentForm.paymentDate}
+              onChange={e =>
+                setPaymentForm({ ...paymentForm, paymentDate: e.target.value })
+              }
+            />
+          </div>
 
-          <input
-            type="number"
-            step="0.01"
-            value={paymentForm.amount}
-            onChange={e =>
-              setPaymentForm({ ...paymentForm, amount: e.target.value })
-            }
-          />
+          <div className="date-field">
+            <label>Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              value={paymentForm.amount}
+              onChange={e =>
+                setPaymentForm({ ...paymentForm, amount: e.target.value })
+              }
+            />
+          </div>
 
           <button onClick={submitPayment}>Pay from Cash</button>
           <button
@@ -233,13 +261,6 @@ export default function Payables() {
           </button>
         </div>
       )}
-
-      {/* EXPORT */}
-      <div className="card">
-        <button onClick={() => exportToExcel(filtered, "Payables")}>
-          Export to Excel
-        </button>
-      </div>
 
       {/* SEARCH */}
       <input
@@ -258,13 +279,17 @@ export default function Payables() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Vendor</th>
-              <th>Project</th>
+              <th>Vendor Name</th>
+              <th>Project ID</th>
               <th>Invoice No</th>
               <th>Invoice Date</th>
               <th>Due Date</th>
               <th>Amount</th>
+              <th>Paid Amount</th>
               <th>Status</th>
+              <th>Created At</th>
+              <th>Created By</th>
+              <th>Updated At</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -280,7 +305,14 @@ export default function Payables() {
                   <td>{p.invoiceDate}</td>
                   <td>{p.dueDate || "-"}</td>
                   <td>₹ {p.invoiceAmount}</td>
+                  <td>
+                    ₹ {p.paidAmount}
+                  </td>
                   <td>{p.status}</td>
+                  <td>{p.createdAt || "-"}</td>
+                  <td>{p.createdBy || "-"}</td>
+                  <td>{p.updatedAt || "-"}</td>
+
                   <td>
                     <button
                       onClick={() => {
@@ -306,22 +338,32 @@ export default function Payables() {
         </table>
       </div>
 
-      {/* PAGINATION */}
+      {/* ================= PAGINATION ================= */}
       {totalPages > 1 && (
         <div className="pagination">
-          <span className="page-info">
-            Page <strong>{page}</strong> of <strong>{totalPages}</strong>
-          </span>
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Prev
+          </button>
 
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
-              className={`page-btn ${page === i + 1 ? "active" : ""}`}
+              className={page === i + 1 ? "active" : ""}
               onClick={() => setPage(i + 1)}
             >
               {i + 1}
             </button>
           ))}
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

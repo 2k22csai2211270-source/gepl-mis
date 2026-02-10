@@ -46,3 +46,22 @@ export async function updateProcurement(id, data) {
 
   return res.json();
 }
+/* ================= RECEIVE PROCUREMENT ================= */
+
+export async function receiveProcurement(procurementId, payload) {
+  const res = await fetch(
+    `${BASE_URL}/api/procurement/${procurementId}/receive`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || "Failed to receive material");
+  }
+
+  return res.json();
+}

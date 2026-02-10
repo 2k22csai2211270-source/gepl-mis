@@ -8,7 +8,7 @@ function authHeaders() {
 }
 
 /* ============== GET (PAGEABLE) ============== */
-export async function getInventory(page = 0, size = 5) {
+export async function getInventory(page = 0, size = 10) {
   const res = await fetch(
     `${BASE_URL}/api/inventory?page=${page}&size=${size}`,
     { headers: authHeaders() }

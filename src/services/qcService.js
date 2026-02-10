@@ -31,7 +31,9 @@ export async function finishQC(qcId) {
 export async function getQCRecords(page, size) {
     const res = await fetch(
         `${BASE_URL}/api/qc?page=${page}&size=${size}`,
-        { headers: authHeaders() }
+        {
+            headers: authHeaders()
+        }
     );
 
     if (!res.ok) {
@@ -42,7 +44,7 @@ export async function getQCRecords(page, size) {
     return res.json();
 }
 
-
+/* ================= ADD QC ================= */
 export async function addQCRecord(payload, productionOrderId) {
     if (!productionOrderId) {
         throw new Error("Production Order ID missing");
@@ -59,7 +61,7 @@ export async function addQCRecord(payload, productionOrderId) {
 
     if (!res.ok) {
         const err = await res.text();
-        throw new Error(err);
+        throw new Error(err || "Failed to add QC record");
     }
 
     return res.json();

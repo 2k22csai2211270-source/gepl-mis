@@ -1,37 +1,34 @@
 import { useEffect, useState } from "react";
-import { exportToExcel } from "../utils/exportExcel";
 import {
   getInventory,
   addInventoryItem,
   updateInventoryItem
 } from "../services/inventoryService";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
 
-  const [itemName, setItemName] = useState("");
+  const [itemCategory, setItemName] = useState("");
   const [itemCode, setItemCode] = useState("");
   const [qty, setQty] = useState("");
   const [unit, setUnit] = useState("");
   const [location, setLocation] = useState("");
   const [editId, setEditId] = useState(null);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1); // UI page (1-based)
   const [totalPages, setTotalPages] = useState(1);
 
   /* ================= LOAD ================= */
   useEffect(() => {
-    loadInventory();
-  }, []);
+    loadInventory(page);
+  }, [page]);
 
-  async function loadInventory(p = page) {
+  async function loadInventory(p) {
     try {
       const res = await getInventory(p - 1, PAGE_SIZE); // backend is 0-based
-      const list = Array.isArray(res?.content) ? res.content : [];
-
-      setInventory(list);
+      setInventory(Array.isArray(res?.content) ? res.content : []);
       setTotalPages(res.totalPages || 1);
     } catch (err) {
       console.error("Load failed", err);
@@ -41,14 +38,14 @@ export default function Inventory() {
 
   /* ================= ADD / UPDATE ================= */
   async function submitItem() {
-    if (!itemName || !itemCode || !qty || !unit || !location) return;
+    if (!itemCategory || !itemCode || !qty || !unit || !location) return;
 
     const payload = {
-      itemName: itemName,      // ✅ MUST be camelCase
-      itemCode: itemCode,      // ✅ MUST be camelCase
+      itemCategory,
+      itemCode,
       quantity: Number(qty),
-      unit: unit,
-      location: location
+      unit,
+      location
     };
 
     try {
@@ -59,17 +56,16 @@ export default function Inventory() {
       }
 
       resetForm();
-      loadInventory();
+      loadInventory(page);
     } catch (err) {
       console.error("Save failed", err);
       alert("Save failed");
     }
   }
 
-  /* ================= EDIT ================= */
   function editItem(item) {
     setEditId(item.id);
-    setItemName(item.itemName);
+    setItemName(item.itemCategory);
     setItemCode(item.itemCode);
     setQty(item.quantity);
     setUnit(item.unit);
@@ -93,57 +89,27 @@ export default function Inventory() {
       {/* ADD / EDIT FORM */}
       <div className="card form-row">
         <div className="date-field">
-          <label>Item Name</label>
-          <input
-            placeholder="Name"
-            value={itemName}
-            onChange={e => setItemName(e.target.value)}
-          />
+          <label>Item Category</label>
+          <input value={itemCategory} placeholder="Name.." onChange={e => setItemName(e.target.value)} />
         </div>
         <div className="date-field">
           <label>Item Code</label>
-          <input
-            placeholder="0"
-            value={itemCode}
-            onChange={e => setItemCode(e.target.value)}
-          />
+          <input value={itemCode} placeholder="0" onChange={e => setItemCode(e.target.value)} />
         </div>
         <div className="date-field">
           <label>Quantity</label>
-          <input
-            type="number"
-            placeholder="0"
-            value={qty}
-            onChange={e => setQty(e.target.value)}
-          />
+          <input type="number" placeholder="0" value={qty} onChange={e => setQty(e.target.value)} />
         </div>
         <div className="date-field">
           <label>Unit</label>
-          <input
-            placeholder="pcs/kg/box"
-            value={unit}
-            onChange={e => setUnit(e.target.value)}
-          />
+          <input value={unit} placeholder="pcs/kg/box" onChange={e => setUnit(e.target.value)} />
         </div>
         <div className="date-field">
           <label>Location</label>
-          <input
-            placeholder="Kanpur"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-          />
+          <input value={location} placeholder="..." onChange={e => setLocation(e.target.value)} />
         </div>
 
-        <button onClick={submitItem}>
-          {editId ? "Update" : "Add"}
-        </button>
-      </div>
-
-      {/* EXPORT */}
-      <div className="card">
-        <button onClick={() => exportToExcel(inventory, "Inventory")}>
-          Export to Excel
-        </button>
+        <button onClick={submitItem}>{editId ? "Update" : "Add"}</button>
       </div>
 
       {/* TABLE */}
@@ -152,7 +118,7 @@ export default function Inventory() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Item Name</th>
+              <th>Item Category</th>
               <th>Item Code</th>
               <th>Qty</th>
               <th>Unit</th>
@@ -168,55 +134,47 @@ export default function Inventory() {
               inventory.map(i => (
                 <tr key={i.id}>
                   <td>{i.id}</td>
-                  <td>{i.itemName}</td>
+                  <td>{i.itemCategory}</td>
                   <td>{i.itemCode}</td>
                   <td>{i.quantity}</td>
                   <td>{i.unit}</td>
                   <td>{i.location}</td>
                   <td>{i.createdBy || "-"}</td>
-                  <td>
-                    {i.createdAt
-                      ? new Date(i.createdAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td>
-                    {i.updatedAt
-                      ? new Date(i.updatedAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td>
-                    <button onClick={() => editItem(i)}>Edit</button>
-                  </td>
+                  <td>{i.createdAt ? new Date(i.createdAt).toLocaleString() : "-"}</td>
+                  <td>{i.updatedAt ? new Date(i.updatedAt).toLocaleString() : "-"}</td>
+                  <td><button onClick={() => editItem(i)}>Edit</button></td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="10">No items</td>
-              </tr>
+              <tr><td colSpan="10">No items</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* PAGINATION */}
+      {/* ================= PAGINATION (FIXED) ================= */}
       {totalPages > 1 && (
         <div className="pagination">
-          <span className="page-info">
-            Page <strong>{page}</strong> of <strong>{totalPages}</strong>
-          </span>
+          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </button>
 
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
-              className={`page-btn ${page === i + 1 ? "active" : ""}`}
-              onClick={() => {
-                setPage(i + 1);
-                loadInventory(i + 1);
-              }}
+              className={page === i + 1 ? "active" : ""}
+              onClick={() => setPage(i + 1)}
             >
               {i + 1}
             </button>
           ))}
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

@@ -1340,7 +1340,7 @@ body.project-open {
 
 .pagination {
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   margin-top: 16px;
 }
 .btn-finish {

@@ -5,7 +5,7 @@ import {
   updateProject
 } from "../services/projectService";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -133,7 +133,7 @@ export default function Projects() {
           <div className="date-field">
             <label>Project Name</label>
             <input
-              placeholder="Name"
+              placeholder="Name.."
               value={form.projectName}
               onChange={e =>
                 setForm({ ...form, projectName: e.target.value })
@@ -153,7 +153,7 @@ export default function Projects() {
           <div className="date-field">
             <label>Client Name</label>
             <input
-              placeholder="Name"
+              placeholder="Name.."
               value={form.clientName}
               onChange={e =>
                 setForm({ ...form, clientName: e.target.value })
@@ -235,6 +235,7 @@ export default function Projects() {
                   <td>{p.projectCode}</td>
                   <td>{p.projectName}</td>
                   <td>{p.clientName || "-"}</td>
+                  <td>{p.plannedStartDate}</td>
                   <td>{p.plannedEndDate}</td>
                   <td>₹ {p.plannedBudget || 0}</td>
                   <td>
