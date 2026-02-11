@@ -1270,6 +1270,10 @@ button.danger {
   padding: 32px;
 }
 
+.light .project-fullscreen{
+  background: white;
+}
+
 /* Prevent background scroll */
 body.project-open {
   overflow: hidden;
@@ -1360,4 +1364,27 @@ body.project-open {
 .btn-finish:disabled {
   background: #94a3b8;
   cursor: not-allowed;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.open {
+  background: #e5e7eb;
+  color: #374151;
 }

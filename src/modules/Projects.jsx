@@ -209,7 +209,7 @@ export default function Projects() {
 
       {/* TABLE */}
       <div className="card">
-        <table className="table">
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -223,7 +223,6 @@ export default function Projects() {
               <th>Created By</th>
               <th>Created At</th>
               <th>Updated At</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -253,11 +252,6 @@ export default function Projects() {
                     {p.updatedAt
                       ? new Date(p.updatedAt).toLocaleString()
                       : "-"}
-                  </td>
-                  <td>
-                    <button onClick={() => editRow(i)}>
-                      Edit
-                    </button>
                   </td>
                 </tr>
               );

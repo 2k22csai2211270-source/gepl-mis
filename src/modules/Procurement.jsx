@@ -185,7 +185,7 @@ export default function Procurement() {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="table">
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th><th>Project</th><th>BOM</th><th>Part</th>

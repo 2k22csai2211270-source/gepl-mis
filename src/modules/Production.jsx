@@ -203,7 +203,7 @@ export default function Production() {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="table">
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>

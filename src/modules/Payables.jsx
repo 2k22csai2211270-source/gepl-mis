@@ -7,7 +7,7 @@ import {
 
 import { addCashTransaction } from "../services/cashBankService";
 
-const PAGE_SIZE = 1;
+const PAGE_SIZE = 10;
 
 export default function Payables() {
   const [data, setData] = useState([]);
@@ -90,9 +90,6 @@ export default function Payables() {
 
     const currentPayment = Number(paymentForm.amount);
 
-    // ✅ IMPORTANT: cumulative paid amount
-    const totalPaid =
-      Number(selectedPayable.paidAmount || 0) + currentPayment;
 
     /* 1️⃣ CASH OUT */
     try {
@@ -115,7 +112,7 @@ export default function Payables() {
     /* 2️⃣ UPDATE PAYABLE (CUMULATIVE) */
     try {
       await updatePayable(selectedPayable.id, {
-        amount: totalPaid,                // ✅ FIX
+        amount: currentPayment,                // ✅ FIX
         paymentDate: paymentForm.paymentDate
       });
     } catch (err) {
@@ -146,6 +143,16 @@ export default function Payables() {
   const filtered = data.filter(p =>
     p.vendorName?.toLowerCase().includes(search.toLowerCase())
   );
+
+  function getStatusClass(status = "") {
+    const s = status.toUpperCase();
+
+    if (s === "PAID") return "status-badge paid";
+    if (s.includes("PARTIAL")) return "status-badge partial";
+    if (s === "OPEN" || s === "PENDING") return "status-badge open";
+
+    return "status-badge";
+  }
 
   /* ================= UI ================= */
   return (
@@ -223,8 +230,8 @@ export default function Payables() {
         <div className="card form-card">
           <h3>Make Payment</h3>
 
-          <p><strong>Vendor:</strong> {selectedPayable.vendorName}</p>
-          <p><strong>Invoice:</strong> {selectedPayable.invoiceNo}</p>
+          <p><b>Vendor:</b> {selectedPayable.vendorName}</p>
+          <p><b>Invoice:</b> {selectedPayable.invoiceNo}</p>
 
           <div className="date-field">
             <label>Payment Date</label>
@@ -275,7 +282,7 @@ export default function Payables() {
 
       {/* TABLE */}
       <div className="card table-card">
-        <table>
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -308,7 +315,11 @@ export default function Payables() {
                   <td>
                     ₹ {p.paidAmount}
                   </td>
-                  <td>{p.status}</td>
+                  <td>
+                    <span className={getStatusClass(p.status)}>
+                      {p.status}
+                    </span>
+                  </td>
                   <td>{p.createdAt || "-"}</td>
                   <td>{p.createdBy || "-"}</td>
                   <td>{p.updatedAt || "-"}</td>
@@ -319,7 +330,7 @@ export default function Payables() {
                         setSelectedPayable(p);
                         setPaymentForm({
                           paymentDate: "",
-                          amount: p.invoiceAmount
+                          amount: p.invoiceAmount - (p.paidAmount || 0)
                         });
                         setPaymentMode(true);
                       }}

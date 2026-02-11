@@ -93,6 +93,16 @@ export default function QC() {
     }
   }
 
+  function getQCStatusClass(status = "") {
+    const s = status.toUpperCase();
+
+    if (s === "FINISHED" || s === "COMPLETED")
+      return "status-badge paid";   // green
+
+    return "status-badge open";     // default grey
+  }
+
+
   /* ================= UI ================= */
   return (
     <div className="module">
@@ -189,7 +199,7 @@ export default function QC() {
 
       {/* ================= TABLE ================= */}
       <div className="card table-card">
-        <table>
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -220,7 +230,12 @@ export default function QC() {
                   <td>{qc.acceptedQty}</td>
                   <td>{qc.reworkQty}</td>
                   <td>{qc.scrapQty}</td>
-                  <td>{qc.status}</td>
+                  <td>
+                    <span className={getQCStatusClass(qc.status)}>
+                      {qc.status}
+                    </span>
+                  </td>
+
                   <td>{qc.remarks || "-"}</td>
                   <td>
                     <button

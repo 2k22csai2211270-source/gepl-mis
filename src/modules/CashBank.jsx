@@ -226,7 +226,7 @@ export default function CashBank({ user }) {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="table">
+        <table className="styled-table">
           <thead>
             <tr>
               <th>Txn ID</th>

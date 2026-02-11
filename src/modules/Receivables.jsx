@@ -146,6 +146,15 @@ export default function Receivables() {
     r.clientName?.toLowerCase().includes(search.toLowerCase())
   );
 
+  function getStatusClass(status = "") {
+    const s = status.toUpperCase();
+
+    if (s === "PAID") return "status-badge paid";
+    if (s.includes("PARTIAL")) return "status-badge partial";
+    if (s === "OPEN" || s === "PENDING") return "status-badge open";
+
+    return "status-badge";
+  }
   /* ================= UI ================= */
   return (
     <div className="module">
@@ -270,7 +279,7 @@ export default function Receivables() {
 
       {/* ================= TABLE ================= */}
       <div className="card table-card">
-        <table>
+        <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -304,7 +313,11 @@ export default function Receivables() {
                 <td>{r.invoiceDate}</td>
                 <td>{r.dueDate || "-"}</td>
                 <td>₹{r.invoiceAmount}</td>
-                <td>{r.status}</td>
+                <td>
+                  <span className={getStatusClass(r.status)}>
+                    {r.status}
+                  </span>
+                </td>
                 <td>{r.createdAt || "-"}</td>
                 <td>{r.createdBy || "-"}</td>
                 <td>{r.updatedAt || "-"}</td>
