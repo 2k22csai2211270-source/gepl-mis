@@ -87,9 +87,12 @@ export default function App() {
   const [page, setPage] = useState(null);
 
   /* ================= RESTORE LOGIN ================= */
+  /* ================= RESTORE USER ON REFRESH ================= */
   useEffect(() => {
     const decoded = decodeToken();
-    if (decoded) {
+    const sessionActive = localStorage.getItem("sessionActive");
+
+    if (decoded && sessionActive === "true") {
       const userObj = {
         username: decoded.username || decoded.sub,
         role: decoded.role,
@@ -100,6 +103,7 @@ export default function App() {
       setPage(getDefaultPage(decoded.role));
     }
   }, []);
+
 
   /* ================= PAGE GUARD ================= */
   useEffect(() => {
@@ -113,7 +117,7 @@ export default function App() {
 
   /* ================= LOGOUT ================= */
   function logout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem("sessionActive");  // ✅ REMOVE SESSION ONLY
     setUser(null);
     setPage(null);
   }
@@ -125,10 +129,12 @@ export default function App() {
     ) : (
       <Login
         onLogin={u => {
+          localStorage.setItem("sessionActive", "true");   // ✅ ADD THIS
           setUser(u);
           setPage(getDefaultPage(u.role));
         }}
-        onSignup={() => setShowSignup(true)}
+        onSignup={() => setShowSignup(true)
+        }
       />
     );
   }
