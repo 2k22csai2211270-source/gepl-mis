@@ -18,7 +18,7 @@ import Production from "./modules/Production";
 import QC from "./modules/QC";
 import Procurement from "./modules/Procurement";
 import Projects from "./modules/Projects";
-import VendorScorecard from "./modules/VendorScorecard";
+// import VendorScorecard from "./modules/VendorScorecard";
 
 /* ================= TOKEN DECODER ================= */
 function decodeToken() {
