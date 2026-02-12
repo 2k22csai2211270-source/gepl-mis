@@ -913,20 +913,35 @@ button.danger {
 
 /* Upcoming */
 .delay-green {
-  background: rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.15);
   color: #22c55e;
 }
 
 /* Due Today */
 .delay-orange {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
 }
 
 /* Delayed */
 .delay-red {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+.delay-yellow {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308
+}
+
+.delay-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.delay-gray {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
 }
 
 /* ===== PROJECT STATUS BAR ===== */
@@ -1387,4 +1402,89 @@ body.project-open {
 .status-badge.open {
   background: #e5e7eb;
   color: #374151;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  margin-right: -18px;
+}
+/* ROOT */
+.app-root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOP BAR */
+.topbar {
+  height: 70px;
+  background: linear-gradient(90deg, #0f172a, #020617);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid #1e293b;
+  z-index: 100;
+}
+.light .topbar{
+  background: white;
+  color: black;
+  border-bottom: 1px solid rgba(96, 95, 95, 0.316) ;
+}
+
+.brand-title {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0px;
+  margin-left: -18px;
+}
+
+/* ACTIONS */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-pill {
+  padding: 6px 12px;
+  background: #d7dbe2;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+/* BODY */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #94a3b8;
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import {
   getDashboardSummary,
   getProjectDashboard,
   getUsers,
-  getAuditLogs
+  getAuditLogs,
+  resetUserPassword
 } from "../services/dashboardService";
 
 import { getInventory } from "../services/inventoryService";
@@ -164,12 +166,6 @@ export default function Dashboard({ onLogout, cashData }) {
           <h1>Executive Dashboard</h1>
           <p>Welcome Back, <b>{loggedUser?.username || loggedUser?.sub}</b></p>
         </div>
-
-        <div className="dash-actions">
-          <button className="icon-btn" onClick={() => document.body.classList.toggle("light")}>🌗</button>
-          <button className="icon-btn" onClick={() => setShowProfile(true)}>👤</button>
-          <button className="logout-btn" onClick={onLogout}>Logout</button>
-        </div>
       </div>
 
       {/* ================= KPIs ================= */}
@@ -201,17 +197,6 @@ export default function Dashboard({ onLogout, cashData }) {
       {/* ================= AUDIT LOG TABLE ================= */}
       <AuditLogTable />
 
-      {/* ================= PROFILE ================= */}
-      {showProfile && loggedUser && (
-        <div className="modal">
-          <div className="modal-card">
-            <h3>User Profile</h3>
-            <p><b>Name:</b> {loggedUser.username || loggedUser.sub}</p>
-            <p><b>Role:</b> {loggedUser.role}</p>
-            <button onClick={() => setShowProfile(false)}>Close</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -225,6 +210,15 @@ function UsersTable() {
   const [data, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
 
+  const [showReset, setShowReset] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+
+  const loggedUser = decodeToken(); // 👈 get current logged user
+
   useEffect(() => {
     load();
   }, [page]);
@@ -235,31 +229,140 @@ function UsersTable() {
     setTotalPages(res.totalPages || 1);
   }
 
+  async function handleChangePassword() {
+    if (!newPassword || !confirmPassword)
+      return alert("All fields required");
+
+    if (newPassword !== confirmPassword)
+      return alert("Passwords do not match");
+
+    try {
+      await resetUserPassword(selectedUser.id, {
+        newPassword
+      });
+
+      alert("Password changed successfully");
+
+      setShowReset(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPass(false);
+
+    } catch (err) {
+      alert(err.message || "Password reset failed");
+    }
+  }
+
+  const isFounder = loggedUser?.role === "FOUNDER";
+
   return (
-    <div className="card" style={{ marginTop: 32 }}>
-      <h3>👤 Users</h3>
+    <>
+      <div className="card" style={{ marginTop: 32 }}>
+        <h3>👤 Users</h3>
 
-      <table className="styled-table">
-        <thead>
-          <tr>
-            <th>ID</th><th>Username</th><th>Role</th><th>Created</th><th>Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(u => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.username}</td>
-              <td>{u.role}</td>
-              <td>{u.createdAt}</td>
-              <td>{u.updatedAt}</td>
+        <table className="styled-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Reset</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
-    </div>
+          <tbody>
+            {data.map(u => (
+              <tr key={u.id}>
+                <td>{u.id}</td>
+                <td>{u.username}</td>
+                <td>{u.role}</td>
+                <td>{u.createdAt}</td>
+                <td>{u.updatedAt}</td>
+                <td>
+                  {isFounder ? (
+                    <button
+                      onClick={() => {
+                        setSelectedUser(u);
+                        setShowReset(true);
+                      }}
+                    >
+                      Reset Password
+                    </button>
+                  ) : (
+                    <button disabled style={{ opacity: 0.5 }}>
+                      Not Allowed
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+      </div>
+
+      {/* ================= RESET PASSWORD MODAL ================= */}
+      {showReset && selectedUser && (
+        <div className="modal">
+          <div className="modal-card">
+            <h3>Reset Password</h3>
+
+            <div className="date-field">
+              <label>Username</label>
+              <input value={selectedUser.username} disabled />
+            </div>
+
+            <div className="date-field password-field">
+              <label>New Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPass ? "text" : "password"}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                />
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPass(!showPass)}
+                >
+                  {showPass ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+            </div>
+
+            <div className="date-field password-field">
+              <label>Confirm Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPass ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                />
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPass(!showPass)}
+                >
+                  {showPass ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+            </div>
+
+            <button onClick={handleChangePassword}>
+              Change Password
+            </button>
+
+            <button
+              className="secondary"
+              onClick={() => setShowReset(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

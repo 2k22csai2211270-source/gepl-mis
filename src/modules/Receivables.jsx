@@ -88,24 +88,6 @@ export default function Receivables() {
     const paidAmount = Number(paymentForm.amount);
 
 
-    /* ================= 1️⃣ ADD TO CASH ================= */
-    try {
-      await addCashTransaction({
-        type: "IN",
-        amount: paidAmount,
-        category: "Receipt",
-        referenceType: "Receivables",
-        referenceId: selectedReceivable.id,
-        projectId: selectedReceivable.projectId,
-        description: `Payment received from ${selectedReceivable.clientName} (Invoice ${selectedReceivable.invoiceNo})`,
-        txnDate: paymentForm.paymentDate   // ✅ correct field
-      });
-    } catch (err) {
-      console.error("Cash entry failed", err);
-      alert("Failed to add payment to Cash");
-      return; // ⛔ STOP if cash failed
-    }
-
     /* ================= 2️⃣ UPDATE RECEIVABLE ================= */
     try {
       await updateReceivable(selectedReceivable.id, {
@@ -328,14 +310,21 @@ export default function Receivables() {
                 <td>₹{r.tdsAmount || 0}</td>
                 <td>₹{r.netAmount || 0}</td>
                 <td>
-                  <button onClick={() => {
-                    setSelectedReceivable(r);
-                    setPaymentForm({ paymentDate: "", amount: r.invoiceAmount });
-                    setPaymentMode(true);
-                  }}>
-                    Receive Payment
+                  <button
+                    disabled={r.status === "PAID"}
+                    onClick={() => {
+                      setSelectedReceivable(r);
+                      setPaymentForm({
+                        paymentDate: "",
+                        amount: r.invoiceAmount
+                      });
+                      setPaymentMode(true);
+                    }}
+                  >
+                    {r.status === "PAID" ? "Paid" : "Receive Payment"}
                   </button>
                 </td>
+
               </tr>
             ))}
           </tbody>

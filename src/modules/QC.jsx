@@ -125,17 +125,6 @@ export default function QC() {
         </div>
 
         <div className="date-field">
-          <label>Project ID</label>
-          <input
-            value={form.projectId}
-            placeholder="0"
-            onChange={e =>
-              setForm({ ...form, projectId: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="date-field">
           <label>Inspected Qty</label>
           <input
             type="number"
@@ -203,15 +192,15 @@ export default function QC() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th>Production Order</th>
-              <th>Project</th>
+              <th>Production Order ID</th>
+              <th>Project ID</th>
               <th>Inspected</th>
               <th>Accepted</th>
               <th>Rework</th>
               <th>Scrap</th>
-              <th>Status</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              {/* <th>Status</th> */}
               <th>Remarks</th>
               <th>Action</th>
             </tr>
@@ -222,19 +211,19 @@ export default function QC() {
               data.map(qc => (
                 <tr key={qc.id}>
                   <td>{qc.id}</td>
-                  <td>{qc.createdAt || "-"}</td>
-                  <td>{qc.updatedAt || "-"}</td>
                   <td>{qc.productionOrderId}</td>
                   <td>{qc.projectId || "-"}</td>
                   <td>{qc.inspectedQty}</td>
                   <td>{qc.acceptedQty}</td>
                   <td>{qc.reworkQty}</td>
                   <td>{qc.scrapQty}</td>
-                  <td>
+                  <td>{qc.createdAt || "-"}</td>
+                  <td>{qc.updatedAt || "-"}</td>
+                  {/* <td>
                     <span className={getQCStatusClass(qc.status)}>
                       {qc.status}
                     </span>
-                  </td>
+                  </td> */}
 
                   <td>{qc.remarks || "-"}</td>
                   <td>

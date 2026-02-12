@@ -61,8 +61,9 @@ export default function Signup({ onBack }) {
         <select value={role} onChange={e => setRole(e.target.value)}>
           <option value="ACCOUNTS">Accounts</option>
           <option value="PRODUCTION">Production</option>
-          <option value="PURCHASE">Purchase</option>
+          <option value="PROCUREMENT">Procurement</option>
           <option value="FOUNDER">Founder</option>
+          <option value="PROJECT">Project</option>
         </select>
 
         <button onClick={handleSignup} disabled={loading}>

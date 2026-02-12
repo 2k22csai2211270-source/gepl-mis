@@ -6,6 +6,7 @@ import Signup from "./modules/Signup";
 
 /* LAYOUT */
 import Sidebar from "./layout/Sidebar";
+import TopBar from "./layout/TopBar";
 
 /* PAGES */
 import Dashboard from "./dashboards/Dashboard";
@@ -30,31 +31,94 @@ function decodeToken() {
   }
 }
 
+/* ================= ROLE CONFIG ================= */
+const ROLE_DEFAULT_PAGE = {
+  FOUNDER: "dashboard",
+  ACCOUNTS: "dashboard",
+  PRODUCTION: "production",
+  PROCUREMENT: "procurement",
+  PROJECT: "dashboard"
+};
+
+const ROLE_ALLOWED_PAGES = {
+  FOUNDER: [
+    "dashboard",
+    "cash",
+    "receivables",
+    "payables",
+    "inventory",
+    "production",
+    "qc",
+    "projects",
+    "procurement"
+  ],
+  ACCOUNTS: [
+    "dashboard",
+    "cash",
+    "receivables",
+    "payables"
+  ],
+  PRODUCTION: [
+    "production",
+    "inventory",
+    "qc"
+  ],
+  PROCUREMENT: [
+    "procurement",
+    "inventory",
+    "qc"
+  ],
+  PROJECT: [
+    "dashboard",
+    "production",
+    "projects",
+    "procurement",
+    "qc"
+  ]
+};
+
+function getDefaultPage(role) {
+  return ROLE_DEFAULT_PAGE[role] || "production";
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState(null);
 
-  /* ================= RESTORE LOGIN ON REFRESH ================= */
+  /* ================= RESTORE LOGIN ================= */
   useEffect(() => {
     const decoded = decodeToken();
     if (decoded) {
-      setUser({
+      const userObj = {
         username: decoded.username || decoded.sub,
         role: decoded.role,
         token: localStorage.getItem("token")
-      });
+      };
+
+      setUser(userObj);
+      setPage(getDefaultPage(decoded.role));
     }
   }, []);
+
+  /* ================= PAGE GUARD ================= */
+  useEffect(() => {
+    if (!user || !page) return;
+
+    const allowed = ROLE_ALLOWED_PAGES[user.role] || [];
+    if (!allowed.includes(page)) {
+      setPage(getDefaultPage(user.role));
+    }
+  }, [page, user]);
 
   /* ================= LOGOUT ================= */
   function logout() {
     localStorage.removeItem("token");
     setUser(null);
-    setPage("dashboard");
+    setPage(null);
   }
 
-  /* ================= AUTH SCREENS ================= */
+  /* ================= AUTH ================= */
   if (!user) {
     return showSignup ? (
       <Signup onBack={() => setShowSignup(false)} />
@@ -62,7 +126,7 @@ export default function App() {
       <Login
         onLogin={u => {
           setUser(u);
-          setPage("dashboard");
+          setPage(getDefaultPage(u.role));
         }}
         onSignup={() => setShowSignup(true)}
       />
@@ -100,22 +164,32 @@ export default function App() {
     case "vendor-scorecard":
       content = <VendorScorecard />;
       break;
-    default:
+    case "dashboard":
       content = <Dashboard user={user} onLogout={logout} />;
+      break;
+    default:
+      content = null;
   }
 
   /* ================= LAYOUT ================= */
   return (
-    <div className="app-shell">
-      <Sidebar
-        user={user}
-        page={page}
-        setPage={setPage}
-      />
+    <div className="app-root">
+      {/* 🔝 TOP NAVBAR */}
+      <TopBar user={user} onLogout={logout} />
 
-      <main className="content page-transition">
-        {content}
-      </main>
+      {/* 🔽 BODY */}
+      <div className="app-body">
+        <Sidebar
+          user={user}
+          page={page}
+          setPage={setPage}
+        />
+
+        <main className="content page-transition">
+          {content}
+        </main>
+      </div>
     </div>
   );
+
 }

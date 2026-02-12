@@ -72,3 +72,25 @@ export async function getAuditLogs(page = 0, size = 5) {
 
   return res.json();
 }
+
+export async function resetUserPassword(userId, payload) {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${BASE_URL}/api/auth/${userId}/reset-password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
+}

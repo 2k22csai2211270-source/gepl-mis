@@ -20,7 +20,7 @@ export default function Projects() {
     plannedStartDate: "",
     plannedEndDate: "",
     plannedBudget: "",
-    completed: ""
+    status: "PLANNED"   // ✅ NEW
   });
 
   /* ================= LOAD ================= */
@@ -32,11 +32,9 @@ export default function Projects() {
     try {
       const res = await getProjects(p - 1, PAGE_SIZE);
       const list = Array.isArray(res?.content) ? res.content : [];
-
       setProjects(list);
       setTotalPages(res.totalPages || 1);
-    } catch (err) {
-      console.error("Load failed", err);
+    } catch {
       setProjects([]);
     }
   }
@@ -55,21 +53,33 @@ export default function Projects() {
       if (editId) {
         await updateProject(editId, form);
       } else {
-        await addProjectApi(form);
+        await addProjectApi({
+          ...form,
+          status: "PLANNED"   // ✅ FORCE DEFAULT ON ADD
+        });
       }
 
       resetForm();
       setEditId(null);
       loadProjects();
-    } catch (err) {
-      console.error("Save failed", err);
+    } catch {
       alert("Save failed");
     }
   }
 
   function editRow(index) {
     const p = projects[index];
-    setForm(p);
+
+    setForm({
+      projectName: p.projectName,
+      projectCode: p.projectCode,
+      clientName: p.clientName,
+      plannedStartDate: p.plannedStartDate,
+      plannedEndDate: p.plannedEndDate,
+      plannedBudget: p.plannedBudget,
+      status: p.status || "PLANNED"
+    });
+
     setEditId(p.id);
   }
 
@@ -81,125 +91,106 @@ export default function Projects() {
       plannedStartDate: "",
       plannedEndDate: "",
       plannedBudget: "",
-      completed: ""
+      status: "PLANNED"
     });
   }
 
-  /* ================= STATUS LOGIC ================= */
-  function projectStatus(p) {
-    const today = new Date();
-    const end = new Date(p.plannedEndDate);
-
-    today.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-
-    if (p.completed) {
-      const completed = new Date(p.completed);
-      const delay = Math.floor((completed - end) / 86400000);
-
-      if (delay > 0)
-        return {
-          text: `Completed (Late by ${delay} days)`,
-          className: "delay-bar delay-red"
-        };
-
-      return {
-        text: "Completed",
-        className: "delay-bar delay-green"
-      };
+  /* ================= STATUS BADGE ================= */
+  function statusBadge(status) {
+    switch (status) {
+      case "COMPLETED":
+        return "delay-bar delay-green";
+      case "IN_PROGRESS":
+        return "delay-bar delay-blue";
+      case "ON_HOLD":
+        return "delay-bar delay-gray";
+      case "PLANNED":
+        return "delay-bar delay-orange";
+      case "CLOSED":
+        return "delay-bar delay-red";
+      default:
+        return "delay-bar";
     }
-
-    if (today > end) {
-      const delay = Math.floor((today - end) / 86400000);
-      return {
-        text: `Delayed by ${delay} days`,
-        className: "delay-bar delay-red"
-      };
-    }
-
-    return {
-      text: "On Track",
-      className: "delay-bar delay-orange"
-    };
   }
 
   return (
     <div className="page">
       <h2>Projects</h2>
 
-      {/* FORM */}
+      {/* ================= FORM ================= */}
       <div className="card">
         <div className="form-row">
           <div className="date-field">
             <label>Project Name</label>
             <input
-              placeholder="Name.."
               value={form.projectName}
-              onChange={e =>
-                setForm({ ...form, projectName: e.target.value })
-              }
+              placeholder="Name.."
+              onChange={e => setForm({ ...form, projectName: e.target.value })}
             />
           </div>
+
           <div className="date-field">
             <label>Project Code</label>
             <input
-              placeholder="0"
               value={form.projectCode}
-              onChange={e =>
-                setForm({ ...form, projectCode: e.target.value })
-              }
+              placeholder="--"
+              onChange={e => setForm({ ...form, projectCode: e.target.value })}
             />
           </div>
+
           <div className="date-field">
             <label>Client Name</label>
             <input
-              placeholder="Name.."
               value={form.clientName}
-              onChange={e =>
-                setForm({ ...form, clientName: e.target.value })
-              }
+              placeholder="Name.."
+              onChange={e => setForm({ ...form, clientName: e.target.value })}
             />
           </div>
+
           <div className="date-field">
             <label>Planned Start Date</label>
             <input
               type="date"
               value={form.plannedStartDate}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  plannedStartDate: e.target.value
-                })
-              }
+              onChange={e => setForm({ ...form, plannedStartDate: e.target.value })}
             />
           </div>
+
           <div className="date-field">
             <label>Planned End Date</label>
             <input
               type="date"
               value={form.plannedEndDate}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  plannedEndDate: e.target.value
-                })
-              }
+              onChange={e => setForm({ ...form, plannedEndDate: e.target.value })}
             />
           </div>
+
           <div className="date-field">
             <label>Planned Budget</label>
             <input
               type="number"
-              placeholder="0"
               value={form.plannedBudget}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  plannedBudget: e.target.value
-                })
-              }
+              placeholder="--"
+              onChange={e => setForm({ ...form, plannedBudget: e.target.value })}
             />
           </div>
+
+          {/* ✅ STATUS DROPDOWN (EDIT MODE ONLY) */}
+          {editId && (
+            <div className="date-field">
+              <label>Status</label>
+              <select
+                value={form.status}
+                onChange={e => setForm({ ...form, status: e.target.value })}
+              >
+                <option value="PLANNED">Planned</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="ON_HOLD">On Hold</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </div>
+          )}
 
           <button onClick={submitProject}>
             {editId ? "Update" : "Add"}
@@ -207,82 +198,64 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* ================= TABLE ================= */}
       <div className="card">
         <table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Project Code</th>
-              <th>Project Name</th>
+              <th>Code</th>
+              <th>Name</th>
               <th>Client</th>
-              <th>Planned Start</th>
-              <th>Planned End</th>
-              <th>Planned Budget</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Budget</th>
               <th>Status</th>
               <th>Created By</th>
               <th>Created At</th>
               <th>Updated At</th>
+              <th>Action</th>
             </tr>
           </thead>
+
           <tbody>
-            {projects.map((p, i) => {
-              const status = projectStatus(p);
-              return (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.projectCode}</td>
-                  <td>{p.projectName}</td>
-                  <td>{p.clientName || "-"}</td>
-                  <td>{p.plannedStartDate}</td>
-                  <td>{p.plannedEndDate}</td>
-                  <td>₹ {p.plannedBudget || 0}</td>
-                  <td>
-                    <div className={status.className}>
-                      {status.text}
-                    </div>
-                  </td>
-                  <td>{p.createdBy || "-"}</td>
-                  <td>
-                    {p.createdAt
-                      ? new Date(p.createdAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td>
-                    {p.updatedAt
-                      ? new Date(p.updatedAt).toLocaleString()
-                      : "-"}
-                  </td>
-                </tr>
-              );
-            })}
+            {projects.map((p, i) => (
+              <tr key={p.id}>
+                <td>{p.id}</td>
+                <td>{p.projectCode}</td>
+                <td>{p.projectName}</td>
+                <td>{p.clientName || "-"}</td>
+                <td>{p.plannedStartDate}</td>
+                <td>{p.plannedEndDate}</td>
+                <td>₹ {p.plannedBudget || 0}</td>
+                <td>
+                  <div className={statusBadge(p.status)}>
+                    {p.status}
+                  </div>
+                </td>
+                <td>{p.createdBy || "-"}</td>
+                <td>{p.createdAt
+                  ? new Date(p.createdAt).toLocaleString()
+                  : "-"}
+                </td>
+                <td>{p.updatedAt
+                  ? new Date(p.updatedAt).toLocaleString()
+                  : "-"}
+                </td>
+                <td>
+                  <button onClick={() => editRow(i)}>Edit</button>
+                </td>
+              </tr>
+            ))}
 
             {projects.length === 0 && (
               <tr>
-                <td colSpan="12">No projects</td>
+                <td colSpan="9">No projects</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i + 1 ? "active" : ""}
-              onClick={() => {
-                setPage(i + 1);
-                loadProjects(i + 1);
-              }}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

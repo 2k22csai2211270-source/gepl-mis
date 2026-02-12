@@ -27,10 +27,7 @@ export default function Sidebar({
       { id: "payables", label: "Payables", icon: <FaClipboardList /> },
       { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
-
-      // ✅ NEW QC MODULE
       { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> },
-
       { id: "projects", label: "Projects", icon: <FaProjectDiagram /> },
       { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> }
     ],
@@ -43,18 +40,23 @@ export default function Sidebar({
     ],
 
     PRODUCTION: [
-      { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
       { id: "production", label: "Production", icon: <FaIndustry /> },
       { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
-
-      // ✅ NEW QC MODULE
       { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> }
     ],
 
-    PURCHASE: [
-      { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
+    PROCUREMENT: [
       { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
-      { id: "inventory", label: "Inventory", icon: <FaBoxes /> }
+      { id: "inventory", label: "Inventory", icon: <FaBoxes /> },
+      { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> }
+    ],
+    PROJECT: [
+      { id: "dashboard", label: "Dashboard", icon: <FaChartPie /> },
+      { id: "production", label: "Production", icon: <FaIndustry /> },
+      { id: "projects", label: "Projects", icon: <FaProjectDiagram /> },
+      { id: "procurement", label: "Procurement", icon: <FaShoppingCart /> },
+      { id: "qc", label: "Quality Control", icon: <FaCheckCircle /> }
+
     ]
   };
 
@@ -63,11 +65,6 @@ export default function Sidebar({
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-header">
-        <div className="brand">
-          <h1>GEATPEC ELECTRONICS</h1>
-        </div>
-      </div>
 
       <nav className="sidebar-menu">
         {menus.length === 0 && (

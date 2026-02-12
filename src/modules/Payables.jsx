@@ -91,24 +91,6 @@ export default function Payables() {
     const currentPayment = Number(paymentForm.amount);
 
 
-    /* 1️⃣ CASH OUT */
-    try {
-      await addCashTransaction({
-        type: "OUT",
-        amount: currentPayment,
-        category: "Payment",
-        referenceType: "Payables",
-        referenceId: selectedPayable.id,
-        projectId: selectedPayable.projectId,
-        description: `Payment made to ${selectedPayable.vendorName} (Invoice ${selectedPayable.invoiceNo})`,
-        txnDate: paymentForm.paymentDate
-      });
-    } catch (err) {
-      console.error("Cash deduction failed", err);
-      alert("Cash deduction failed");
-      return;
-    }
-
     /* 2️⃣ UPDATE PAYABLE (CUMULATIVE) */
     try {
       await updatePayable(selectedPayable.id, {
@@ -118,6 +100,7 @@ export default function Payables() {
     } catch (err) {
       console.error("Payable update failed", err);
       alert("Cash deducted, but Payable update failed");
+      return;
     }
 
     /* CLEANUP */
@@ -326,6 +309,10 @@ export default function Payables() {
 
                   <td>
                     <button
+                      disabled={
+                        p.status === "PAID" ||
+                        (p.paidAmount || 0) >= p.invoiceAmount
+                      }
                       onClick={() => {
                         setSelectedPayable(p);
                         setPaymentForm({
@@ -335,9 +322,10 @@ export default function Payables() {
                         setPaymentMode(true);
                       }}
                     >
-                      Make Payment
+                      {(p.paidAmount || 0) >= p.invoiceAmount ? "Paid" : "Make Payment"}
                     </button>
                   </td>
+
                 </tr>
               ))
             ) : (
