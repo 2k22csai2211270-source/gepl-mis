@@ -209,8 +209,8 @@ button.danger {
 
 /* ICON BUTTONS */
 .icon-btn {
-  width: 42px;
-  height: 42px;
+  width: 35px;
+  height: 35px;
   border-radius: 10px;
   background: var(--bg-hover);
   display: flex;
@@ -222,9 +222,9 @@ button.danger {
 
 /* LOGOUT */
 .logout-btn {
-  padding: 10px 16px;
-  border-radius: px;
-  background: #ef4444;
+  padding: 10px 10px;
+  border-radius: 10px;
+  background: #dc1b1b;
   color: white;
   font-weight: 600;
 }
@@ -1419,8 +1419,8 @@ body.project-open {
 
 /* TOP BAR */
 .topbar {
-  height: 70px;
-  background: linear-gradient(90deg, #0f172a, #020617);
+  height: 60px;
+  background: linear-gradient(90deg, #070e1c, #020617);
   color: white;
   display: flex;
   align-items: center;
@@ -1436,10 +1436,18 @@ body.project-open {
 }
 
 .brand-title {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 0px;
+  font-size: 25px;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-style: italic;
+  letter-spacing: 1px;
   margin-left: -18px;
+}
+.brand-name{
+  font-size: 25px;
+  margin-top: -18px;
+  margin-left: -10px;
+  font-style: italic;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 /* ACTIONS */

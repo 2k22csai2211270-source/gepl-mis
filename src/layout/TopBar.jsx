@@ -12,7 +12,7 @@ export default function TopBar({ user, onLogout }) {
       {/* ================= TOP NAVBAR ================= */}
       <header className="topbar">
         <div className="topbar-left">
-          <h1 className="brand-title">GEATPEC ELECTRONICS</h1>
+          <h1 className="brand-title">GEATPEC</h1><h1 className="brand-name">ELECTRONICS</h1>
         </div>
 
         <div className="topbar-actions">
