@@ -103,17 +103,17 @@ export default function Dashboard({ onLogout, cashData }) {
         <h1>📊 Project Dashboard</h1>
 
         <div className="kpi-grid">
-          <div className="card kpi"><span>🆔 ID</span><b>{projectData.projectId}</b></div>
-          <div className="card kpi"><span>🏷 Code</span><b>{projectData.projectCode}</b></div>
+          <div className="card kpi projects"><span>🆔 ID</span><b>{projectData.projectId}</b></div>
+          <div className="card kpi active"><span>🏷 Code</span><b>{projectData.projectCode}</b></div>
           <div className="card kpi"><span>💰 Budget</span><b>₹ {money(projectData.plannedBudget)}</b></div>
           <div className="card kpi payables"><span>💸 Spend</span><b>₹ {money(projectData.actualSpend)}</b></div>
-          <div className="card kpi"><span>📊 Used</span><b>{projectData.budgetUtilizationPercent}%</b></div>
+          <div className="card kpi inventory"><span>📊 Used</span><b>{projectData.budgetUtilizationPercent}%</b></div>
           <div className="card kpi"><span>📥 Cash In</span><b>₹ {money(projectData.cashIn)}</b></div>
           <div className="card kpi"><span>📤 Cash Out</span><b>₹ {money(projectData.cashOut)}</b></div>
           <div className="card kpi receivables"><span>📥 Receivables</span><b>₹ {money(projectData.receivableOutstanding)}</b></div>
           <div className="card kpi payables"><span>📤 Payables</span><b>₹ {money(projectData.payableOutstanding)}</b></div>
           <div className="card kpi inventory"><span>📦 Inventory</span><b>{projectData.inventoryConsumed}</b></div>
-          <div className="card kpi">
+          <div className="card kpi payables">
             <span>💵 Cost</span>
             <b style={{ color: projectData.costStatus === "OVER_BUDGET" ? "red" : "limegreen" }}>
               {projectData.costStatus}
@@ -127,7 +127,7 @@ export default function Dashboard({ onLogout, cashData }) {
             </b>
           </div>
 
-          <div className="card kpi">
+          <div className="card kpi receivables">
             <span>⚠ Risk</span>
             <b style={{
               color:
@@ -173,11 +173,11 @@ export default function Dashboard({ onLogout, cashData }) {
         <div className="card kpi"><span>💰 Cash</span><b>₹ {money(summary.netCashPosition)}</b></div>
         <div className="card kpi receivables"><span>📥 Receivables</span><b>₹ {money(summary.totalReceivableOutstanding)}</b></div>
         <div className="card kpi payables"><span>📤 Payables</span><b>₹ {money(summary.totalPayableOutstanding)}</b></div>
-        <div className="card kpi"><span>📁 Total Projects</span><b>{summary.totalProjects}</b></div>
-        <div className="card kpi"><span>🚀 Active Projects</span><b>{summary.activeProjects}</b></div>
+        <div className="card kpi projects"><span>📁 Total Projects</span><b>{summary.totalProjects}</b></div>
+        <div className="card kpi active"><span>🚀 Active Projects</span><b>{summary.activeProjects}</b></div>
         <div className="card kpi"><span>📥 Cash In</span><b>₹ {money(summary.totalCashIn)}</b></div>
         <div className="card kpi"><span>📤 Cash Out</span><b>₹ {money(summary.totalCashOut)}</b></div>
-        <div className="card kpi"><span>❤️ Cash Health</span><b>{summary.cashHealth}</b></div>
+        <div className="card kpi inventory"><span>❤️ Cash Health</span><b>{summary.cashHealth}</b></div>
       </div>
 
       {/* ================= OPEN PROJECT ================= */}
