@@ -7,7 +7,7 @@ import {
 } from "../services/productionService";
 
 const PAGE_SIZE = 10;
-const BASE_URL = "http://192.168.29.68:8080";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function authHeaders() {
   const token = localStorage.getItem("token");
