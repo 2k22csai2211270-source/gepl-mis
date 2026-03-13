@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Pagination from "../layout/Pagination";
 import {
   getProjects,
   addProject as addProjectApi,
@@ -258,4 +259,10 @@ export default function Projects() {
       </div>
     </div>
   );
+  {/* ================= PAGINATION ================= */ }
+  <Pagination
+    page={page}
+    totalPages={totalPages}
+    onPageChange={setPage}
+  />
 }

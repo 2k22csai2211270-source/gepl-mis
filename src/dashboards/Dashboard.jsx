@@ -1,3 +1,4 @@
+import PaginationBar from "../layout/Pagination";
 import { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -28,7 +29,7 @@ const money = n =>
     minimumFractionDigits: 2
   });
 
-export default function Dashboard({ onLogout, cashData }) {
+export default function Dashboard({ onLogout, cashData, setPage }) {
   /* ================= USER ================= */
   const [loggedUser, setLoggedUser] = useState(null);
 
@@ -170,24 +171,42 @@ export default function Dashboard({ onLogout, cashData }) {
 
       {/* ================= KPIs ================= */}
       <div className="kpi-grid">
-        <div className="card kpi"><span>💰 Cash</span><b>₹ {money(summary.netCashPosition)}</b></div>
-        <div className="card kpi receivables"><span>📥 Receivables</span><b>₹ {money(summary.totalReceivableOutstanding)}</b></div>
-        <div className="card kpi payables"><span>📤 Payables</span><b>₹ {money(summary.totalPayableOutstanding)}</b></div>
-        <div className="card kpi projects"><span>📁 Total Projects</span><b>{summary.totalProjects}</b></div>
-        <div className="card kpi active"><span>🚀 Active Projects</span><b>{summary.activeProjects}</b></div>
-        <div className="card kpi"><span>📥 Cash In</span><b>₹ {money(summary.totalCashIn)}</b></div>
-        <div className="card kpi"><span>📤 Cash Out</span><b>₹ {money(summary.totalCashOut)}</b></div>
-        <div className="card kpi inventory"><span>❤️ Cash Health</span><b>{summary.cashHealth}</b></div>
+        <div className="card kpi cash" onClick={() => setPage?.("cash")} style={{ cursor: "pointer" }}>
+          <span>💰 Cash Position</span><b>₹ {money(summary.netCashPosition)}</b>
+        </div>
+        <div className="card kpi receivables" onClick={() => setPage?.("receivables")} style={{ cursor: "pointer" }}>
+          <span>📥 Receivables</span><b>₹ {money(summary.totalReceivableOutstanding)}</b>
+        </div>
+        <div className="card kpi payables" onClick={() => setPage?.("payables")} style={{ cursor: "pointer" }}>
+          <span>📤 Payables</span><b>₹ {money(summary.totalPayableOutstanding)}</b>
+        </div>
+        <div className="card kpi projects" onClick={() => setPage?.("projects")} style={{ cursor: "pointer" }}>
+          <span>📁 Total Projects</span><b>{summary.totalProjects}</b>
+        </div>
+        <div className="card kpi active" onClick={() => setPage?.("projects")} style={{ cursor: "pointer" }}>
+          <span>🚀 Active Projects</span><b>{summary.activeProjects}</b>
+        </div>
+        <div className="card kpi cash" onClick={() => setPage?.("cash")} style={{ cursor: "pointer" }}>
+          <span>📥 Cash In</span><b>₹ {money(summary.totalCashIn)}</b>
+        </div>
+        <div className="card kpi cash" onClick={() => setPage?.("cash")} style={{ cursor: "pointer" }}>
+          <span>📤 Cash Out</span><b>₹ {money(summary.totalCashOut)}</b>
+        </div>
+        <div className="card kpi inventory" onClick={() => setPage?.("cash")} style={{ cursor: "pointer" }}>
+          <span>❤️ Cash Health</span><b>{summary.cashHealth}</b>
+        </div>
       </div>
 
       {/* ================= OPEN PROJECT ================= */}
       <div className="card" style={{ marginTop: 24 }}>
         <h3>Open Project Dashboard</h3>
+        <br />
         <input
           placeholder="Project ID"
           value={projectId}
           onChange={e => setProjectId(e.target.value)}
         />
+        <br /><br />
         <button onClick={openProjectDashboard}>Open</button>
       </div>
 
@@ -416,11 +435,5 @@ function AuditLogTable() {
 
 /* ================= PAGINATION ================= */
 function Pagination({ page, totalPages, setPage }) {
-  return (
-    <div className="pagination">
-      <button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
-      <span>Page {page} of {totalPages}</span>
-      <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</button>
-    </div>
-  );
+  return <PaginationBar page={page} totalPages={totalPages} onPageChange={setPage} />;
 }

@@ -1,3 +1,4 @@
+import Pagination from "../layout/Pagination";
 import { useEffect, useState } from "react";
 import {
   getReceivables,
@@ -334,30 +335,11 @@ export default function Receivables() {
       </div>
 
       {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i + 1 ? "active" : ""}
-              onClick={() => setPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

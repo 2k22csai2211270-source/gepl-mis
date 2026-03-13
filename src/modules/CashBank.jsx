@@ -1,3 +1,4 @@
+import Pagination from "../layout/Pagination";
 import { useEffect, useState } from "react";
 import {
   getCashTransactions,
@@ -5,7 +6,7 @@ import {
   updateCashTransaction
 } from "../services/cashBankService";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 export default function CashBank({ user }) {
   const [data, setData] = useState([]);
@@ -276,33 +277,12 @@ export default function CashBank({ user }) {
       </div>
 
       {/* ================= PAGINATION ================= */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={page === 0}
-            onClick={() => loadCash(page - 1)}
-          >
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i ? "active" : ""}
-              onClick={() => loadCash(i)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages - 1}
-            onClick={() => loadCash(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(p) => loadCash(p)}
+        zeroBased={true}
+      />
     </div>
   );
 }

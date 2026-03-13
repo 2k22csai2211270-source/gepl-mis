@@ -1,3 +1,4 @@
+import Pagination from "../layout/Pagination";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -227,12 +228,21 @@ export default function QC() {
 
                   <td>{qc.remarks || "-"}</td>
                   <td>
-                    <button
-                      disabled={qc.status === "FINISHED"}
-                      onClick={() => handleFinishQC(qc.id)}
-                    >
-                      {qc.status === "FINISHED" ? "Finished" : "Finish"}
-                    </button>
+                    {qc.status === "FINISHED" ? (
+                      <span className="qc-finished-badge">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{flexShrink:0}}>
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Finished
+                      </span>
+                    ) : (
+                      <button
+                        className="btn-finish"
+                        onClick={() => handleFinishQC(qc.id)}
+                      >
+                        Finish
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -246,30 +256,11 @@ export default function QC() {
       </div>
 
       {/* ================= PAGINATION ================= */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i + 1 ? "active" : ""}
-              onClick={() => setPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

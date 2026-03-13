@@ -1,3 +1,4 @@
+import Pagination from "../layout/Pagination";
 import { useEffect, useState } from "react";
 import {
   getProduction,
@@ -6,7 +7,7 @@ import {
 } from "../services/productionService";
 
 const PAGE_SIZE = 10;
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = "http://192.168.29.68:8080";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -271,30 +272,11 @@ export default function Production() {
         </table>
       </div>
       {/* ================= PAGINATION ================= */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={page === i + 1 ? "active" : ""}
-              onClick={() => setPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
 
       {/* ================= CONSUME MODAL ================= */}
       {showConsume && (

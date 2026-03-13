@@ -85,6 +85,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
   const [page, setPage] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   /* ================= RESTORE LOGIN ================= */
   /* ================= RESTORE USER ON REFRESH ================= */
@@ -189,6 +190,8 @@ export default function App() {
           user={user}
           page={page}
           setPage={setPage}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
         />
 
         <main className="content page-transition">
