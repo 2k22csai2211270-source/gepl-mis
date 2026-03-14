@@ -279,7 +279,7 @@ function UsersTable() {
       <div className="card" style={{ marginTop: 32 }}>
         <h3>👤 Users</h3>
 
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -318,7 +318,7 @@ function UsersTable() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
 
         <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       </div>
@@ -408,7 +408,7 @@ function AuditLogTable() {
     <div className="card" style={{ marginTop: 32 }}>
       <h3>📝 Audit Logs</h3>
 
-      <table className="styled-table">
+      <div className="table-scroll"><table className="styled-table">
         <thead>
           <tr>
             <th>ID</th><th>User</th><th>Module</th><th>Action</th><th>Note</th><th>Created At</th>
@@ -426,7 +426,7 @@ function AuditLogTable() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
 
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>

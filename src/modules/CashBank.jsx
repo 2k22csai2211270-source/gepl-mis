@@ -6,7 +6,7 @@ import {
   updateCashTransaction
 } from "../services/cashBankService";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 
 export default function CashBank({ user }) {
   const [data, setData] = useState([]);
@@ -227,7 +227,7 @@ export default function CashBank({ user }) {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>Txn ID</th>
@@ -273,7 +273,7 @@ export default function CashBank({ user }) {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* ================= PAGINATION ================= */}

@@ -189,7 +189,7 @@ export default function QC() {
 
       {/* ================= TABLE ================= */}
       <div className="card table-card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -252,7 +252,7 @@ export default function QC() {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* ================= PAGINATION ================= */}

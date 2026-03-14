@@ -263,7 +263,7 @@ export default function Receivables() {
       {/* ================= TABLE ================= */}
       <div className="card table-card">
         <div className="table-wrapper">
-          <table className="styled-table">
+          <div className="table-scroll"><table className="styled-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -330,7 +330,7 @@ export default function Receivables() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
 

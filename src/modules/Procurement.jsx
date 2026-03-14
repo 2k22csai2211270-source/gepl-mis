@@ -186,7 +186,7 @@ export default function Procurement() {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th><th>Project</th><th>BOM</th><th>Part</th>
@@ -229,7 +229,7 @@ export default function Procurement() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* ================= PAGINATION ================= */}

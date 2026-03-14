@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import Pagination from "../layout/Pagination";
+import { useEffect, useState } from "react";
 import {
   getProjects,
   addProject as addProjectApi,
@@ -201,7 +201,7 @@ export default function Projects() {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -255,7 +255,7 @@ export default function Projects() {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

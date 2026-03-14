@@ -117,7 +117,7 @@ h1,h2,h3,h4,h5,h6 {
 .app-body { flex:1; display:flex; overflow:hidden; }
 
 .content {
-  flex:1; overflow-y:auto; overflow-x:hidden;
+  flex:1; overflow-y:auto; overflow-x:auto;
   padding: 24px 28px;
 }
 
@@ -621,7 +621,7 @@ button.secondary:hover:not(:disabled) {
   padding: 9px 12px;
   text-align: left;
   font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.65px;
@@ -960,26 +960,6 @@ body.project-open { overflow:hidden; }
 .kpi-grid .card {
   cursor: pointer;
   position: relative;
-}
-
-.kpi-grid .card::after {
-  content: "View →";
-  position: absolute;
-  bottom: 10px;
-  right: 14px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-dim);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-.kpi-grid .card:hover::after {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 .kpi-grid .card:hover {
@@ -1684,4 +1664,45 @@ body.light .as-left  { background: #f0f4ff; border-right-color: var(--border); }
 body.light .as-right { background: #fff; }
 body.light .as-input { background: #f8fafc; }
 body.light .as-orb   { opacity: 0.1; }
+
+
+/* ══════════════════════════════════════════════════════════
+   TABLE SCROLL — all tables inside cards are horizontally
+   scrollable so wide columns never get clipped
+══════════════════════════════════════════════════════════ */
+
+/* Every card that contains a table becomes a scroll host */
+.card .styled-table,
+.card .data-table,
+.card .table,
+.table-card .styled-table,
+.table-card .data-table {
+  min-width: 600px; /* forces scroll before columns collapse */
+}
+
+/* Wrap the table in an overflow container inside the card */
+.card > table,
+.card > .styled-table,
+.card > .data-table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Universal: any .card or .table-card that directly wraps a table */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md);
+}
+
+/* Scrollbar styling for table containers — thinner, subtle */
+.table-scroll::-webkit-scrollbar,
+.card::-webkit-scrollbar          { height: 4px; }
+.table-scroll::-webkit-scrollbar-track,
+.card::-webkit-scrollbar-track    { background: transparent; }
+.table-scroll::-webkit-scrollbar-thumb,
+.card::-webkit-scrollbar-thumb    { background: var(--border); border-radius: 99px; }
+.table-scroll::-webkit-scrollbar-thumb:hover,
+.card::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 

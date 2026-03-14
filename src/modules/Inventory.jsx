@@ -138,7 +138,7 @@ export default function Inventory() {
 
       {/* INVENTORY TABLE */}
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -169,7 +169,7 @@ export default function Inventory() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* INVENTORY PAGINATION */}
@@ -183,7 +183,7 @@ export default function Inventory() {
       <h2 style={{ marginTop: "30px" }}>Finished Goods</h2>
 
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -214,7 +214,7 @@ export default function Inventory() {
               <tr><td colSpan="8">No finished goods</td></tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* FINISHED GOODS PAGINATION */}

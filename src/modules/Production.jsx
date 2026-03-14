@@ -204,7 +204,7 @@ export default function Production() {
 
       {/* ================= TABLE ================= */}
       <div className="card">
-        <table className="styled-table">
+        <div className="table-scroll"><table className="styled-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -269,7 +269,7 @@ export default function Production() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
       {/* ================= PAGINATION ================= */}
       <Pagination
